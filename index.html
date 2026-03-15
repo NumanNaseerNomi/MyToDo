@@ -1,517 +1,1104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>TaskFlow</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --bg:#0e0e10; --surface:#17171b; --surface2:#1e1e24; --border:#2a2a35;
-    --accent:#c8fb4e; --accent2:#4efbca; --danger:#fb4e6a;
-    --text:#f0f0f4; --muted:#7a7a8c; --done-text:#444455;
-    --radius:12px; --mono:'DM Mono',monospace; --display:'Syne',sans-serif;
-  }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;overflow-x:hidden}
-  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5}
-  .app{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:40px 20px 80px}
+:root {
+  --bg: #080810;
+  --bg2: #0d0d1a;
+  --surface: #111120;
+  --surface2: #181830;
+  --border: #1e1e38;
+  --border2: #282848;
+  --accent: #7c6aff;
+  --accent-glow: rgba(124,106,255,0.2);
+  --accent-light: #a594ff;
+  --green: #3cffa0;
+  --green-dim: rgba(60,255,160,0.12);
+  --red: #ff4e6a;
+  --yellow: #ffc73c;
+  --text: #e8e8f8;
+  --text2: #9090b8;
+  --text3: #484870;
+  --radius: 14px;
+  --mono: 'JetBrains Mono', monospace;
+  --display: 'Bricolage Grotesque', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:40px;gap:16px}
-  .brand h1{font-size:clamp(2rem,6vw,3.2rem);font-weight:800;letter-spacing:-0.04em;line-height:1}
-  .brand h1 span{color:var(--accent)}
-  .brand p{font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-top:6px;letter-spacing:.08em;text-transform:uppercase}
-  .sync-area{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:140px}
-  .sync-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.68rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
-  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:background .4s}
-  .sync-dot.syncing{background:var(--accent);animation:pulse 1s infinite}
-  .sync-dot.synced{background:var(--accent2)}
-  .sync-dot.error{background:var(--danger)}
-  .sync-dot.offline{background:#555}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-  .btn-setup{font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap}
-  .btn-setup:hover{border-color:var(--accent);color:var(--accent)}
-  .btn-setup.connected{border-color:rgba(78,251,202,.35);color:var(--accent2)}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--display);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  .stats-label{font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;padding:0 2px}
-  .stats-label span:last-child{color:var(--accent2)}
-  .stats{height:4px;background:var(--surface2);border-radius:var(--radius);overflow:hidden;margin-bottom:28px}
-  .stats-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s cubic-bezier(.34,1.56,.64,1);border-radius:var(--radius)}
+/* animated gradient orbs in background */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+  z-index: 0;
+}
+body::before {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(124,106,255,0.06) 0%, transparent 70%);
+  top: -200px; right: -200px;
+  animation: orb1 12s ease-in-out infinite alternate;
+}
+body::after {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(60,255,160,0.04) 0%, transparent 70%);
+  bottom: -150px; left: -150px;
+  animation: orb2 15s ease-in-out infinite alternate;
+}
+@keyframes orb1 { from{transform:translate(0,0)} to{transform:translate(-40px,40px)} }
+@keyframes orb2 { from{transform:translate(0,0)} to{transform:translate(40px,-30px)} }
 
-  .input-row{display:flex;gap:10px;margin-bottom:12px}
-  .task-input{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 18px;font-family:var(--display);font-size:.95rem;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
-  .task-input::placeholder{color:var(--muted)}
-  .task-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(200,251,78,.08)}
-  .add-btn{background:var(--accent);color:#0e0e10;border:none;border-radius:var(--radius);width:50px;font-size:1.5rem;font-weight:700;cursor:pointer;transition:transform .15s,background .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .add-btn:hover{background:#d9ff5a;transform:scale(1.05)}
-  .add-btn:active{transform:scale(.96)}
+/* ── LOADING ── */
+#loadingScreen {
+  position: fixed; inset: 0; background: var(--bg);
+  z-index: 999; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 20px;
+  transition: opacity 0.5s, visibility 0.5s;
+}
+#loadingScreen.gone { opacity: 0; visibility: hidden; }
+.spinner {
+  width: 44px; height: 44px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-brand {
+  font-size: 1.5rem; font-weight: 800;
+  letter-spacing: -0.04em; color: var(--text2);
+}
+.loading-brand b { color: var(--accent-light); }
 
-  .categories{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-  .cat-pill{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:999px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;user-select:none}
-  .cat-pill:hover{border-color:var(--accent);color:var(--accent)}
-  .cat-pill.active{background:var(--accent);border-color:var(--accent);color:#0e0e10;font-weight:600}
+/* ── SCREENS ── */
+#setupScreen, #loginScreen, #appScreen {
+  position: relative; z-index: 1;
+  display: none;
+}
+#setupScreen.show, #loginScreen.show, #appScreen.show { display: block; }
 
-  .filter-bar{display:flex;gap:8px;margin-bottom:24px;background:var(--surface);border-radius:var(--radius);padding:4px}
-  .filter-btn{flex:1;font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;padding:8px 6px;border:none;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
-  .filter-btn.active{background:var(--surface2);color:var(--text)}
-  .filter-btn:hover:not(.active){color:var(--text)}
+/* ── SETUP SCREEN ── */
+#setupScreen {
+  min-height: 100vh; display: none;
+  align-items: center; justify-content: center;
+  padding: 40px 20px;
+}
+#setupScreen.show { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-  .task-list{display:flex;flex-direction:column;gap:8px;list-style:none}
-  .task-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;transition:border-color .2s,transform .15s,opacity .3s;animation:slideIn .2s ease;position:relative;overflow:hidden}
-  .task-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:0;transition:opacity .2s}
-  .task-item:hover{border-color:#3a3a48;transform:translateX(2px)}
-  .task-item:hover::before{opacity:1}
-  .task-item.done{opacity:.5}
-  .task-item.done::before{background:var(--accent2);opacity:1}
-  @keyframes slideIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.setup-wrap {
+  max-width: 480px; width: 100%;
+  animation: riseIn 0.5s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes riseIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
 
-  .task-check{width:22px;height:22px;border:1.5px solid var(--border);border-radius:6px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;background:transparent;user-select:none}
-  .task-check:hover{border-color:var(--accent);background:rgba(200,251,78,.05)}
-  .task-check.checked{background:var(--accent2);border-color:var(--accent2)}
-  .task-check.checked::after{content:'✓';font-size:.75rem;color:#0e0e10;font-weight:700}
+.setup-logo {
+  text-align: center; margin-bottom: 36px;
+}
+.setup-logo h1 {
+  font-size: 3rem; font-weight: 800;
+  letter-spacing: -0.05em; line-height: 1;
+}
+.setup-logo h1 em { font-style: normal; color: var(--accent-light); }
+.setup-logo p {
+  font-family: var(--mono); font-size: 0.68rem;
+  color: var(--text3); letter-spacing: 0.1em;
+  text-transform: uppercase; margin-top: 8px;
+}
 
-  .task-body{flex:1;min-width:0}
-  .task-text{font-size:.92rem;font-weight:400;line-height:1.4;word-break:break-word;transition:color .2s}
-  .task-item.done .task-text{text-decoration:line-through;color:var(--done-text)}
-  .task-meta{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap}
-  .task-time{font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.04em}
-  .task-tag{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--surface2);color:var(--muted)}
+.setup-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 0 0 1px rgba(124,106,255,0.05), 0 24px 48px rgba(0,0,0,0.4);
+}
+.setup-card h2 {
+  font-size: 1.2rem; font-weight: 700;
+  letter-spacing: -0.03em; margin-bottom: 6px;
+}
+.setup-card > p {
+  font-family: var(--mono); font-size: 0.7rem;
+  color: var(--text2); line-height: 1.7; margin-bottom: 24px;
+}
 
-  .task-actions{display:flex;gap:4px;opacity:0;transition:opacity .2s;flex-shrink:0}
-  .task-item:hover .task-actions{opacity:1}
-  .action-btn{width:28px;height:28px;border-radius:6px;border:none;background:var(--surface2);color:var(--muted);cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
-  .action-btn:hover{background:var(--border);color:var(--text)}
-  .action-btn.del:hover{background:rgba(251,78,106,.15);color:var(--danger)}
+.fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.field label {
+  display: block; font-family: var(--mono);
+  font-size: 0.6rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 5px;
+}
+.field input {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 9px;
+  padding: 11px 14px;
+  font-family: var(--mono); font-size: 0.82rem;
+  color: var(--text); outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.field input::placeholder { color: var(--text3); }
 
-  .empty{text-align:center;padding:60px 20px;animation:fadeIn .3s ease}
-  .empty-icon{font-size:3rem;margin-bottom:16px;opacity:.4}
-  .empty h3{font-weight:700;font-size:1.1rem;color:var(--muted);margin-bottom:8px}
-  .empty p{font-family:var(--mono);font-size:.72rem;color:#444455;letter-spacing:.04em}
-  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.btn-continue {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent), #9b8cff);
+  color: #fff; border: none; border-radius: 11px;
+  padding: 14px; font-family: var(--display);
+  font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(124,106,255,0.3);
+}
+.btn-continue:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(124,106,255,0.45); }
+.btn-continue:active { transform: translateY(0); }
 
-  /* Modal */
-  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
-  .modal-backdrop.open{display:flex;animation:fadeIn .2s ease}
-  .modal{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:32px;max-width:500px;width:100%;position:relative;max-height:90vh;overflow-y:auto}
-  .modal-close{position:absolute;top:16px;right:16px;background:var(--surface2);border:none;border-radius:6px;color:var(--muted);font-size:1rem;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
-  .modal-close:hover{color:var(--text);background:var(--border)}
-  .modal h2{font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px}
-  .modal h2 span{color:var(--accent)}
-  .modal-sub{font-family:var(--mono);font-size:.72rem;color:var(--muted);line-height:1.7;margin-bottom:24px}
+.steps-box {
+  margin-top: 20px;
+  background: rgba(124,106,255,0.04);
+  border: 1px solid rgba(124,106,255,0.12);
+  border-radius: 10px; padding: 16px;
+  font-family: var(--mono); font-size: 0.64rem;
+  color: var(--text2); line-height: 2;
+}
+.steps-box a { color: var(--green); text-decoration: none; }
+.steps-box a:hover { text-decoration: underline; }
+.steps-box strong { color: var(--accent-light); }
 
-  .connected-banner{background:rgba(78,251,202,.07);border:1px solid rgba(78,251,202,.25);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:.72rem;color:var(--accent2);display:flex;align-items:center;gap:10px}
+/* ── LOGIN SCREEN ── */
+#loginScreen {
+  min-height: 100vh; display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px 20px;
+}
+#loginScreen.show { display: flex; }
 
-  .steps{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
-  .step{display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)}
-  .step-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#0e0e10;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-  .step-body{flex:1}
-  .step-title{font-size:.88rem;font-weight:700;margin-bottom:4px}
-  .step-desc{font-family:var(--mono);font-size:.68rem;color:var(--muted);line-height:1.6}
-  .step-desc a{color:var(--accent2);text-decoration:none}
-  .step-desc a:hover{text-decoration:underline}
-  .step-desc code{background:var(--bg);padding:2px 6px;border-radius:4px;color:var(--accent);font-size:.65rem}
+.login-wrap {
+  max-width: 380px; width: 100%; text-align: center;
+  animation: riseIn 0.5s cubic-bezier(0.34,1.2,0.64,1);
+}
+.login-logo { font-size: 2.8rem; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 6px; }
+.login-logo em { font-style: normal; color: var(--accent-light); }
+.login-sub { font-family: var(--mono); font-size: 0.68rem; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 48px; }
 
-  .modal label{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-  .modal input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:.82rem;color:var(--text);outline:none;margin-bottom:16px;transition:border-color .2s}
-  .modal input:focus{border-color:var(--accent)}
-  .modal input::placeholder{color:#3a3a4a}
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px; padding: 32px;
+  box-shadow: 0 0 0 1px rgba(124,106,255,0.05), 0 24px 48px rgba(0,0,0,0.5);
+}
+.login-card h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 8px; }
+.login-card p { font-family: var(--mono); font-size: 0.7rem; color: var(--text2); line-height: 1.7; margin-bottom: 28px; }
 
-  .modal-actions{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap}
-  .btn-primary{flex:1;background:var(--accent);color:#0e0e10;border:none;border-radius:8px;padding:13px;font-family:var(--display);font-size:.9rem;font-weight:700;cursor:pointer;transition:background .2s;min-width:120px}
-  .btn-primary:hover{background:#d9ff5a}
-  .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:13px 18px;font-family:var(--display);font-size:.88rem;cursor:pointer;transition:all .2s}
-  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
-  .btn-danger{background:transparent;border:1.5px solid rgba(251,78,106,.3);color:var(--danger);border-radius:8px;padding:13px 14px;font-family:var(--display);font-size:.82rem;cursor:pointer;transition:all .2s}
-  .btn-danger:hover{background:rgba(251,78,106,.1)}
+.google-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px;
+  background: #fff; color: #1a1a2e; border: none; border-radius: 11px;
+  padding: 14px 20px; font-family: var(--display);
+  font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; margin-bottom: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+.google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.google-btn:active { transform: translateY(0); }
+.google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-  /* Toast */
-  .toast-container{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px}
-  .toast{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:.72rem;color:var(--text);display:flex;align-items:center;gap:8px;animation:toastIn .3s ease;max-width:300px;box-shadow:0 4px 24px rgba(0,0,0,.4);transition:opacity .4s}
-  .toast.success .toast-icon{color:var(--accent2)}
-  .toast.error   .toast-icon{color:var(--danger)}
-  .toast.info    .toast-icon{color:var(--accent)}
-  @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+.divider span { font-family: var(--mono); font-size: 0.62rem; color: var(--text3); }
 
-  @media(max-width:500px){
-    .sync-area{min-width:auto}
-    .modal{padding:24px 16px}
-  }
+.btn-local-login {
+  width: 100%; background: transparent;
+  border: 1px solid var(--border2); border-radius: 11px;
+  padding: 12px 20px; font-family: var(--display);
+  font-size: 0.88rem; color: var(--text2);
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-local-login:hover { border-color: var(--border2); color: var(--text); background: var(--surface2); }
+
+.reconfigure {
+  margin-top: 16px;
+  font-family: var(--mono); font-size: 0.62rem;
+  color: var(--text3); text-align: center;
+}
+.reconfigure button {
+  background: none; border: none; color: var(--accent-light);
+  font-family: var(--mono); font-size: 0.62rem;
+  cursor: pointer; text-decoration: underline;
+}
+
+/* ── APP SCREEN ── */
+#appScreen { min-height: 100vh; }
+.app-inner { max-width: 720px; margin: 0 auto; padding: 36px 20px 100px; }
+
+/* Top bar */
+.topbar {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px; gap: 16px;
+}
+.topbar-left h1 { font-size: clamp(1.6rem,4.5vw,2.4rem); font-weight: 800; letter-spacing: -0.04em; }
+.topbar-left h1 em { font-style: normal; color: var(--accent-light); }
+.topbar-left .sub { font-family: var(--mono); font-size: 0.65rem; color: var(--text3); letter-spacing: 0.07em; text-transform: uppercase; margin-top: 4px; }
+
+.topbar-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+/* User pill */
+.user-pill {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 999px; padding: 5px 14px 5px 5px;
+  animation: riseIn 0.4s ease;
+}
+.user-photo {
+  width: 28px; height: 28px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+  border: 1.5px solid var(--accent);
+}
+.user-initials {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: #fff; font-size: 0.7rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--accent);
+}
+.user-info { display: flex; flex-direction: column; }
+.user-name { font-size: 0.75rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+.user-email { font-family: var(--mono); font-size: 0.58rem; color: var(--text3); }
+
+/* Sync badge */
+.sync-row { display: flex; align-items: center; gap: 8px; }
+.sync-badge {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 0.62rem;
+  color: var(--text3); letter-spacing: 0.05em; text-transform: uppercase;
+}
+.sync-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text3); transition: background 0.4s;
+}
+.sync-dot.live   { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.sync-dot.saving { background: var(--yellow); animation: blink 0.6s infinite; }
+.sync-dot.error  { background: var(--red); }
+.sync-dot.local  { background: var(--text3); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.icon-btn {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 5px 9px;
+  font-family: var(--mono); font-size: 0.62rem;
+  color: var(--text3); cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
+}
+.icon-btn:hover { border-color: var(--border2); color: var(--text); background: var(--surface2); }
+.icon-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+/* Stats bar */
+.progress-wrap { margin-bottom: 30px; }
+.progress-labels { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.progress-labels span { font-family: var(--mono); font-size: 0.67rem; color: var(--text2); }
+.progress-labels .pct { color: var(--green); }
+.progress-track { height: 4px; background: var(--surface2); border-radius: 999px; overflow: hidden; }
+.progress-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* Input area */
+.input-area { margin-bottom: 16px; }
+.input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+.task-input {
+  flex: 1; background: var(--surface);
+  border: 1px solid var(--border2); border-radius: var(--radius);
+  padding: 14px 18px; font-family: var(--display);
+  font-size: 0.95rem; color: var(--text); outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.task-input::placeholder { color: var(--text3); }
+.task-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+.add-btn {
+  width: 52px; background: linear-gradient(135deg, var(--accent), #9b8cff);
+  border: none; border-radius: var(--radius); font-size: 1.4rem; font-weight: 700;
+  color: #fff; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; box-shadow: 0 4px 16px rgba(124,106,255,0.3);
+}
+.add-btn:hover { transform: scale(1.06); box-shadow: 0 6px 24px rgba(124,106,255,0.45); }
+.add-btn:active { transform: scale(0.94); }
+
+/* Category pills */
+.cats { display: flex; gap: 7px; flex-wrap: wrap; }
+.cat {
+  font-family: var(--mono); font-size: 0.63rem; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 5px 12px; border-radius: 999px;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--text3); cursor: pointer; transition: all 0.2s;
+}
+.cat:hover { border-color: var(--accent); color: var(--accent-light); }
+.cat.on { background: rgba(124,106,255,0.15); border-color: var(--accent); color: var(--accent-light); }
+
+/* Filters */
+.filters {
+  display: flex; gap: 6px; margin-bottom: 22px;
+  background: var(--surface); border-radius: var(--radius); padding: 4px;
+}
+.filt {
+  flex: 1; font-family: var(--mono); font-size: 0.63rem;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 8px 6px; border: none; border-radius: 10px;
+  background: transparent; color: var(--text3);
+  cursor: pointer; transition: all 0.2s;
+}
+.filt.on { background: var(--surface2); color: var(--text); }
+.filt:hover:not(.on) { color: var(--text); }
+
+/* Task list */
+.tasks { display: flex; flex-direction: column; gap: 7px; list-style: none; }
+
+.task {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--radius); padding: 14px 16px;
+  display: flex; align-items: center; gap: 13px;
+  position: relative; overflow: hidden;
+  animation: taskIn 0.22s cubic-bezier(0.34,1.2,0.64,1);
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.task::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--accent); opacity: 0; transition: opacity 0.2s;
+}
+.task:hover { border-color: var(--border2); transform: translateX(4px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.task:hover::before { opacity: 1; }
+.task.done { opacity: 0.42; }
+.task.done::before { background: var(--green); opacity: 1; }
+@keyframes taskIn { from{opacity:0;transform:translateY(-8px) scale(0.98)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+.check-box {
+  width: 22px; height: 22px; border-radius: 7px;
+  border: 1.5px solid var(--border2); flex-shrink: 0;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; background: transparent;
+}
+.check-box:hover { border-color: var(--accent); background: var(--accent-glow); }
+.check-box.done { background: var(--green-dim); border-color: var(--green); }
+.check-box.done::after { content: '✓'; font-size: 0.72rem; color: var(--green); font-weight: 700; }
+
+.task-body { flex: 1; min-width: 0; }
+.task-txt { font-size: 0.9rem; font-weight: 500; line-height: 1.45; word-break: break-word; }
+.task.done .task-txt { text-decoration: line-through; color: var(--text3); }
+.task-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+.task-date { font-family: var(--mono); font-size: 0.6rem; color: var(--text3); }
+.task-cat {
+  font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 4px;
+  background: var(--surface2); color: var(--text3); border: 1px solid var(--border);
+}
+
+.task-btns { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
+.task:hover .task-btns { opacity: 1; }
+.tbtn {
+  width: 28px; height: 28px; border-radius: 7px; border: none;
+  background: var(--surface2); color: var(--text3);
+  cursor: pointer; font-size: 0.78rem;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.tbtn.del:hover { background: rgba(255,78,106,0.15); color: var(--red); }
+
+/* Empty state */
+.empty { text-align: center; padding: 64px 20px; animation: fadeIn 0.4s ease; }
+.empty-icon { font-size: 3rem; opacity: 0.2; margin-bottom: 16px; }
+.empty h3 { font-weight: 700; font-size: 1rem; color: var(--text2); margin-bottom: 6px; }
+.empty p { font-family: var(--mono); font-size: 0.67rem; color: var(--text3); }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+/* Backup/Restore panel */
+.br-panel {
+  margin-top: 32px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--radius); overflow: hidden;
+}
+.br-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; cursor: pointer;
+  border-bottom: 1px solid transparent; transition: border-color 0.2s;
+}
+.br-header:hover { background: var(--surface2); }
+.br-header.open { border-color: var(--border2); }
+.br-title { font-size: 0.85rem; font-weight: 600; letter-spacing: -0.01em; }
+.br-arrow { font-size: 0.7rem; color: var(--text3); transition: transform 0.2s; }
+.br-header.open .br-arrow { transform: rotate(180deg); }
+.br-body { display: none; padding: 18px; }
+.br-body.open { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.br-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; padding: 16px 12px; border-radius: 10px;
+  border: 1px solid var(--border2); background: var(--bg2);
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.br-btn:hover { border-color: var(--accent); background: var(--accent-glow); }
+.br-btn .icon { font-size: 1.3rem; }
+.br-btn .label { font-size: 0.78rem; font-weight: 600; }
+.br-btn .desc { font-family: var(--mono); font-size: 0.6rem; color: var(--text3); line-height: 1.5; }
+.br-btn.green:hover { border-color: var(--green); background: var(--green-dim); }
+.br-last-backup {
+  grid-column: 1/-1;
+  font-family: var(--mono); font-size: 0.64rem; color: var(--text3);
+  text-align: center; padding: 8px;
+  background: var(--bg); border-radius: 7px;
+  border: 1px solid var(--border);
+}
+
+/* Toast */
+.toasts {
+  position: fixed; bottom: 24px; right: 24px;
+  z-index: 500; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 12px 16px;
+  font-family: var(--mono); font-size: 0.7rem; color: var(--text);
+  display: flex; align-items: center; gap: 9px;
+  animation: toastIn 0.25s ease;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  max-width: 280px; pointer-events: all;
+}
+.toast .ti { font-size: 0.9rem; }
+.toast.ok  .ti { color: var(--green); }
+.toast.err .ti { color: var(--red); }
+.toast.inf .ti { color: var(--accent-light); }
+@keyframes toastIn { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
+
+@media (max-width:520px) {
+  .setup-card, .login-card { padding: 24px 18px; }
+  .br-body.open { grid-template-columns: 1fr; }
+  .user-email { display: none; }
+}
 </style>
 </head>
 <body>
-<div class="app">
 
-  <header>
-    <div class="brand">
-      <h1>Task<span>Flow</span></h1>
-      <p>Local-first · Firebase sync</p>
-    </div>
-    <div class="sync-area">
-      <div class="sync-status">
-        <div class="sync-dot offline" id="syncDot"></div>
-        <span id="syncLabel">Local only</span>
-      </div>
-      <button class="btn-setup" id="setupBtn" onclick="openModal()">🔥 Connect Google</button>
-    </div>
-  </header>
-
-  <div class="stats-label">
-    <span id="statsText">0 tasks</span>
-    <span id="statsPercent">—</span>
-  </div>
-  <div class="stats"><div class="stats-fill" id="statsFill" style="width:0%"></div></div>
-
-  <div style="margin-bottom:20px;margin-top:18px">
-    <div class="input-row">
-      <input class="task-input" id="taskInput" placeholder="What needs to be done?" maxlength="200"/>
-      <button class="add-btn" onclick="addTask()">+</button>
-    </div>
-    <div class="categories" id="catSelector">
-      <button class="cat-pill active" data-cat="">All</button>
-      <button class="cat-pill" data-cat="work">💼 Work</button>
-      <button class="cat-pill" data-cat="personal">🏠 Personal</button>
-      <button class="cat-pill" data-cat="shopping">🛒 Shopping</button>
-      <button class="cat-pill" data-cat="health">💪 Health</button>
-    </div>
-  </div>
-
-  <div class="filter-bar">
-    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
-    <button class="filter-btn" onclick="setFilter('active',this)">Active</button>
-    <button class="filter-btn" onclick="setFilter('done',this)">Done</button>
-  </div>
-
-  <ul class="task-list" id="taskList"></ul>
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="spinner"></div>
+  <div class="loading-brand">Task<b>Flow</b></div>
 </div>
 
-<!-- Setup Modal -->
-<div class="modal-backdrop" id="modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <h2>Connect <span>Google Firebase</span></h2>
-    <p class="modal-sub">
-      Firebase is Google's free cloud database — sign in with your Google account and paste one URL below.
-      Your tasks will sync across every device instantly. Free tier = 1 GB storage, 10 GB/month transfer.
-    </p>
-
-    <div id="connectedBanner" style="display:none" class="connected-banner">
-      <span>✓</span><span>Firebase connected — tasks are syncing live</span>
+<!-- SETUP SCREEN (first-time Firebase config) -->
+<div id="setupScreen">
+  <div class="setup-wrap">
+    <div class="setup-logo">
+      <h1>Task<em>Flow</em></h1>
+      <p>One-time Firebase setup</p>
     </div>
+    <div class="setup-card">
+      <h2>Connect your Firebase project</h2>
+      <p>This is a one-time setup. Your config is saved locally so you never need to enter it again.</p>
 
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-body">
-          <div class="step-title">Open Firebase Console</div>
-          <div class="step-desc">Go to <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> and sign in with your Google account.</div>
+      <div class="fields">
+        <div class="field">
+          <label>API Key</label>
+          <input id="fApiKey" placeholder="AIzaSy…" autocomplete="off" spellcheck="false"/>
+        </div>
+        <div class="field">
+          <label>Auth Domain</label>
+          <input id="fAuthDomain" placeholder="myapp.firebaseapp.com"/>
+        </div>
+        <div class="field">
+          <label>Database URL</label>
+          <input id="fDbUrl" placeholder="https://myapp-default-rtdb.firebaseio.com"/>
+        </div>
+        <div class="field">
+          <label>Project ID</label>
+          <input id="fProjectId" placeholder="my-project-id"/>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-body">
-          <div class="step-title">Create a project</div>
-          <div class="step-desc">Click <strong>Add project</strong> → give it a name (e.g. <code>my-tasks</code>) → Continue → Create project.</div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-body">
-          <div class="step-title">Enable Realtime Database</div>
-          <div class="step-desc">In the left menu: <strong>Build → Realtime Database → Create database</strong>. Pick any region. Choose <strong>Start in test mode</strong> → Enable.</div>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-body">
-          <div class="step-title">Copy & paste the URL below</div>
-          <div class="step-desc">At the top of the Realtime Database page you'll see a URL like:<br><code>https://my-tasks-xxxx-default-rtdb.firebaseio.com</code><br>Copy it and paste below. Done!</div>
-        </div>
-      </div>
-    </div>
 
-    <label>Firebase Database URL</label>
-    <input id="firebaseUrl" placeholder="https://your-project-default-rtdb.firebaseio.com" autocomplete="off" spellcheck="false"/>
+      <button class="btn-continue" id="btnSetupContinue">Save & Continue →</button>
 
-    <div class="modal-actions">
-      <button class="btn-primary" onclick="saveConfig()">Connect & Sync</button>
-      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn-danger" id="disconnectBtn" style="display:none" onclick="disconnect()">Disconnect</button>
+      <div class="steps-box">
+        <strong>Setup guide (2 min):</strong><br>
+        1. Open <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → New project<br>
+        2. Add a <strong>Web app</strong> ( &lt;/&gt; ) → copy the <strong>firebaseConfig</strong><br>
+        3. <strong>Authentication</strong> → Sign-in method → Enable <strong>Google</strong><br>
+        4. Add your site URL to <strong>Authorized domains</strong> (Settings → Auth)<br>
+        5. <strong>Realtime Database</strong> → Create → <strong>Test mode</strong> (30 days free)<br>
+        6. Paste 4 values above and continue ↑
+      </div>
     </div>
   </div>
 </div>
 
-<div class="toast-container" id="toastContainer"></div>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-logo">Task<em>Flow</em></div>
+    <div class="login-sub">Your tasks. Everywhere.</div>
+    <div class="login-card">
+      <h2>Welcome back</h2>
+      <p>Sign in with your Google account to sync, backup, and restore your tasks across all devices.</p>
 
-<script>
-// ── STATE ─────────────────────────────────────
-let tasks = [];
-let filter = 'all';
-let activeCategory = '';
-let firebaseUrl = '';
-let isConnected = false;
-let syncTimer = null;
-let pollInterval = null;
+      <button class="google-btn" id="btnGoogleLogin">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
 
-// ── INIT ──────────────────────────────────────
-function init() {
-  try { tasks = JSON.parse(localStorage.getItem('tf_tasks') || '[]'); } catch(e){ tasks=[]; }
-  firebaseUrl = localStorage.getItem('tf_firebase_url') || '';
+      <div class="divider"><span>or</span></div>
 
-  document.getElementById('catSelector').addEventListener('click', e => {
-    const pill = e.target.closest('.cat-pill');
-    if (!pill) return;
-    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    activeCategory = pill.dataset.cat;
-  });
+      <button class="btn-local-login" id="btnLocalLogin">Use without account (local only)</button>
 
-  document.getElementById('taskInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') addTask();
-  });
+      <div class="reconfigure">
+        Wrong Firebase project? <button id="btnReconfig">Reconfigure</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-  document.getElementById('modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-  });
+<!-- APP SCREEN -->
+<div id="appScreen">
+  <div class="app-inner">
 
-  render(); updateStats();
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1>Task<em>Flow</em></h1>
+        <div class="sub" id="appSub">Loading…</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-pill" id="userPill" style="display:none">
+          <div class="user-initials" id="userAvatar">?</div>
+          <div class="user-info">
+            <div class="user-name" id="userName">—</div>
+            <div class="user-email" id="userEmail">—</div>
+          </div>
+        </div>
+        <div class="sync-row">
+          <div class="sync-badge">
+            <div class="sync-dot local" id="syncDot"></div>
+            <span id="syncLabel">Local</span>
+          </div>
+          <button class="icon-btn danger" id="btnLogout" style="display:none">Sign out</button>
+        </div>
+      </div>
+    </div>
 
-  if (firebaseUrl) connectFirebase(false);
-}
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-labels">
+        <span id="progText">0 tasks</span>
+        <span class="pct" id="progPct">—</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progFill" style="width:0%"></div>
+      </div>
+    </div>
 
-// ── FIREBASE ──────────────────────────────────
-function connectFirebase(showToast = true) {
-  if (!firebaseUrl) return;
-  setSyncStatus('syncing', 'Connecting…');
+    <!-- Input -->
+    <div class="input-area">
+      <div class="input-row">
+        <input class="task-input" id="taskInput" placeholder="Add a new task…" maxlength="280"/>
+        <button class="add-btn" id="btnAdd">+</button>
+      </div>
+      <div class="cats" id="cats">
+        <button class="cat on" data-c="">All</button>
+        <button class="cat" data-c="work">💼 Work</button>
+        <button class="cat" data-c="personal">🏠 Personal</button>
+        <button class="cat" data-c="shopping">🛒 Shopping</button>
+        <button class="cat" data-c="health">💪 Health</button>
+        <button class="cat" data-c="study">📚 Study</button>
+      </div>
+    </div>
 
-  fetch(`${firebaseUrl}/taskflow.json`)
-    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(data => {
-      if (data && Array.isArray(data.tasks)) mergeFromRemote(data.tasks);
-      isConnected = true;
-      setSyncStatus('synced', 'Live ✓');
-      setConnectedUI(true);
-      if (showToast) toast('Connected to Firebase!', 'success');
-      pushAll(); // push any local-only tasks
-      startPolling();
-    })
-    .catch(err => {
-      setSyncStatus('error', 'Failed');
-      toast('Could not connect. Check the URL and make sure Realtime Database is enabled.', 'error');
-      console.error('Firebase error:', err);
-    });
-}
+    <!-- Filters -->
+    <div class="filters">
+      <button class="filt on" data-f="all">All</button>
+      <button class="filt" data-f="active">Active</button>
+      <button class="filt" data-f="done">Done</button>
+    </div>
 
-function startPolling() {
-  if (pollInterval) clearInterval(pollInterval);
-  pollInterval = setInterval(() => {
-    if (!isConnected || !firebaseUrl) return;
-    fetch(`${firebaseUrl}/taskflow.json`)
-      .then(r => r.json())
-      .then(data => {
-        if (data && Array.isArray(data.tasks)) mergeFromRemote(data.tasks);
-      }).catch(() => {});
-  }, 20000); // poll every 20s for live updates from other devices
-}
+    <!-- Task list -->
+    <ul class="tasks" id="taskList"></ul>
 
-function pushAll() {
-  if (!isConnected || !firebaseUrl) return;
-  setSyncStatus('syncing', 'Saving…');
-  fetch(`${firebaseUrl}/taskflow.json`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tasks, lastUpdated: Date.now() })
-  })
-  .then(r => {
-    if (r.ok) setSyncStatus('synced', 'Saved ✓');
-    else setSyncStatus('error', 'Error');
-  })
-  .catch(() => setSyncStatus('error', 'Offline'));
-}
+    <!-- Backup / Restore panel -->
+    <div class="br-panel" id="brPanel" style="display:none">
+      <div class="br-header" id="brToggle">
+        <span class="br-title">☁️ Backup & Restore</span>
+        <span class="br-arrow">▼</span>
+      </div>
+      <div class="br-body" id="brBody">
+        <button class="br-btn green" id="btnBackup">
+          <span class="icon">💾</span>
+          <span class="label">Backup Now</span>
+          <span class="desc">Save all tasks to<br>your Google account</span>
+        </button>
+        <button class="br-btn" id="btnRestore">
+          <span class="icon">🔄</span>
+          <span class="label">Restore</span>
+          <span class="desc">Load saved tasks<br>from your account</span>
+        </button>
+        <div class="br-last-backup" id="brLastBackup">No backup info yet</div>
+      </div>
+    </div>
 
-function schedulePush() {
-  if (!isConnected) return;
-  if (syncTimer) clearTimeout(syncTimer);
-  setSyncStatus('syncing', 'Pending…');
-  syncTimer = setTimeout(pushAll, 1500);
-}
+  </div>
+</div>
 
-function mergeFromRemote(remote) {
-  const map = new Map();
-  // remote first, then local overrides (local is more recent if same id)
-  [...remote, ...tasks].forEach(t => {
-    if (!map.has(t.id)) {
-      map.set(t.id, t);
+<div class="toasts" id="toasts"></div>
+
+<script type="module">
+import { initializeApp }          from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut as _signOut }
+                                   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, set, get, onValue, off, serverTimestamp }
+                                   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let tasks      = [];
+let filter     = 'all';
+let activeCat  = '';
+let fbApp, fbAuth, fbDb;
+let currentUser = null;
+let realtimeRef = null;
+let isLocalMode = false;
+
+const LS_TASKS  = 'tf_tasks_v2';
+const LS_CONFIG = 'tf_fbcfg_v2';
+const LS_BACKUP = 'tf_last_backup';
+
+// ═══════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════
+;(async function boot() {
+  const saved = localStorage.getItem(LS_TASKS);
+  if (saved) { try { tasks = JSON.parse(saved); } catch{} }
+
+  const cfg = localStorage.getItem(LS_CONFIG);
+  if (!cfg) {
+    // First time — show setup
+    hideLoading();
+    show('setupScreen');
+    return;
+  }
+
+  try {
+    initFb(JSON.parse(cfg));
+    // onAuthStateChanged will handle the rest
+  } catch(e) {
+    hideLoading();
+    show('loginScreen');
+    toast('Firebase error: ' + e.message, 'err');
+  }
+})();
+
+// ═══════════════════════════════════════════════
+//  FIREBASE INIT
+// ═══════════════════════════════════════════════
+function initFb(cfg) {
+  fbApp  = initializeApp(cfg);
+  fbAuth = getAuth(fbApp);
+  fbDb   = getDatabase(fbApp);
+  localStorage.setItem(LS_CONFIG, JSON.stringify(cfg));
+
+  onAuthStateChanged(fbAuth, user => {
+    hideLoading();
+    if (user) {
+      currentUser = user;
+      isLocalMode = false;
+      launchApp(user);
     } else {
-      const ex = map.get(t.id);
-      if ((t.updatedAt || t.createdAt || 0) > (ex.updatedAt || ex.createdAt || 0)) {
-        map.set(t.id, t);
-      }
+      currentUser = null;
+      show('loginScreen');
     }
   });
-  const merged = Array.from(map.values()).sort((a,b) => b.createdAt - a.createdAt);
-  // Only re-render if changed
-  if (JSON.stringify(merged) !== JSON.stringify(tasks)) {
-    tasks = merged;
-    saveLocal();
-    render();
-    updateStats();
+}
+
+// ═══════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════
+id('btnSetupContinue').onclick = () => {
+  const cfg = readSetupForm();
+  if (!cfg) return;
+  showLoading();
+  try {
+    initFb(cfg);
+  } catch(e) {
+    hideLoading();
+    toast('Invalid config: ' + e.message, 'err');
+  }
+};
+
+id('btnGoogleLogin').onclick = async () => {
+  if (!fbAuth) { toast('Firebase not initialised', 'err'); return; }
+  showLoading();
+  try {
+    await signInWithPopup(fbAuth, new GoogleAuthProvider());
+    // onAuthStateChanged fires next
+  } catch(e) {
+    hideLoading();
+    toast('Sign-in failed: ' + e.message, 'err');
+  }
+};
+
+id('btnLocalLogin').onclick = () => {
+  isLocalMode = true;
+  launchApp(null);
+};
+
+id('btnReconfig').onclick = () => {
+  localStorage.removeItem(LS_CONFIG);
+  show('setupScreen');
+};
+
+id('btnLogout').onclick = async () => {
+  if (!fbAuth) return;
+  if (realtimeRef) { off(realtimeRef); realtimeRef = null; }
+  await _signOut(fbAuth);
+  currentUser = null;
+  isLocalMode = false;
+  show('loginScreen');
+  toast('Signed out', 'inf');
+};
+
+// ═══════════════════════════════════════════════
+//  LAUNCH APP
+// ═══════════════════════════════════════════════
+function launchApp(user) {
+  show('appScreen');
+
+  if (user) {
+    // Show user info
+    id('userPill').style.display = '';
+    id('btnLogout').style.display = '';
+    id('userName').textContent  = user.displayName || 'User';
+    id('userEmail').textContent = user.email || '';
+    id('appSub').textContent    = 'Synced · ' + (user.email || 'Google');
+
+    // Avatar
+    if (user.photoURL) {
+      const img = document.createElement('img');
+      img.className = 'user-photo';
+      img.src = user.photoURL;
+      img.referrerPolicy = 'no-referrer';
+      id('userAvatar').replaceWith(img);
+    } else {
+      id('userAvatar').textContent = (user.displayName || user.email || 'U')[0].toUpperCase();
+    }
+
+    // Backup/restore panel
+    id('brPanel').style.display = '';
+    updateBackupLabel();
+
+    // Start realtime sync
+    setSyncStatus('saving', 'Connecting…');
+    startRealtimeSync(user.uid);
+
+  } else {
+    // Local mode
+    id('appSub').textContent = 'Local only — no sync';
+    setSyncStatus('local', 'Local');
+    render(); updateStats();
+  }
+
+  // Backup/restore buttons
+  id('brToggle').onclick = toggleBrPanel;
+  id('btnBackup').onclick  = doBackup;
+  id('btnRestore').onclick = doRestore;
+}
+
+// ═══════════════════════════════════════════════
+//  REALTIME SYNC
+// ═══════════════════════════════════════════════
+function startRealtimeSync(uid) {
+  if (realtimeRef) off(realtimeRef);
+  realtimeRef = ref(fbDb, `users/${uid}/tasks`);
+
+  onValue(realtimeRef, snap => {
+    const remote = snap.val();
+    if (Array.isArray(remote) && remote.length) {
+      tasks = mergeTasks(tasks, remote);
+      saveLocal();
+    } else if (tasks.length > 0) {
+      // No cloud data yet — push our local tasks up
+      pushCloud(uid);
+      return;
+    }
+    render(); updateStats();
+    setSyncStatus('live', 'Live');
+  }, err => {
+    setSyncStatus('error', 'Error');
+    toast('Sync error: ' + err.message, 'err');
+  });
+}
+
+function pushCloud(uid) {
+  if (!fbDb || !uid) return;
+  setSyncStatus('saving', 'Saving…');
+  return set(ref(fbDb, `users/${uid}/tasks`), tasks)
+    .then(() => setSyncStatus('live', 'Live'))
+    .catch(e => { setSyncStatus('error', 'Failed'); toast('Save failed: ' + e.message, 'err'); });
+}
+
+function mergeTasks(local, remote) {
+  const map = new Map();
+  [...remote, ...local].forEach(t => {
+    const existing = map.get(t.id);
+    if (!existing || (t.updatedAt || 0) > (existing.updatedAt || 0)) map.set(t.id, t);
+  });
+  return Array.from(map.values()).sort((a,b) => b.createdAt - a.createdAt);
+}
+
+// ═══════════════════════════════════════════════
+//  BACKUP & RESTORE
+// ═══════════════════════════════════════════════
+async function doBackup() {
+  if (!currentUser || !fbDb) return;
+  const uid = currentUser.uid;
+  setSyncStatus('saving', 'Backing up…');
+  const backup = {
+    tasks,
+    backedUpAt: Date.now(),
+    email: currentUser.email,
+    count: tasks.length
+  };
+  try {
+    await set(ref(fbDb, `users/${uid}/backup`), backup);
+    const ts = new Date().toLocaleString();
+    localStorage.setItem(LS_BACKUP, ts);
+    updateBackupLabel(ts);
+    setSyncStatus('live', 'Live');
+    toast(`✓ ${tasks.length} tasks backed up`, 'ok');
+  } catch(e) {
+    setSyncStatus('error', 'Error');
+    toast('Backup failed: ' + e.message, 'err');
   }
 }
 
-function disconnect() {
-  if (!confirm('Disconnect Firebase? Your tasks remain saved locally.')) return;
-  isConnected = false;
-  firebaseUrl = '';
-  if (pollInterval) clearInterval(pollInterval);
-  if (syncTimer) clearTimeout(syncTimer);
-  localStorage.removeItem('tf_firebase_url');
-  setSyncStatus('offline', 'Local only');
-  setConnectedUI(false);
-  closeModal();
-  toast('Disconnected from Firebase', 'info');
+async function doRestore() {
+  if (!currentUser || !fbDb) return;
+  const uid = currentUser.uid;
+  setSyncStatus('saving', 'Restoring…');
+  try {
+    const snap = await get(ref(fbDb, `users/${uid}/backup`));
+    const data = snap.val();
+    if (!data || !Array.isArray(data.tasks)) {
+      setSyncStatus('live', 'Live');
+      toast('No backup found for this account.', 'inf');
+      return;
+    }
+    // Merge restored tasks with current
+    tasks = mergeTasks(tasks, data.tasks);
+    saveLocal();
+    await pushCloud(uid);
+    render(); updateStats();
+    const ts = new Date(data.backedUpAt).toLocaleString();
+    toast(`✓ Restored ${data.tasks.length} tasks from ${ts}`, 'ok');
+  } catch(e) {
+    setSyncStatus('error', 'Error');
+    toast('Restore failed: ' + e.message, 'err');
+  }
 }
 
-// ── CRUD ──────────────────────────────────────
+function updateBackupLabel(ts) {
+  const saved = ts || localStorage.getItem(LS_BACKUP);
+  id('brLastBackup').textContent = saved
+    ? `Last backup: ${saved}`
+    : 'No backup found for this account';
+}
+
+function toggleBrPanel() {
+  const header = id('brToggle');
+  const body   = id('brBody');
+  header.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════════
+//  TASK CRUD
+// ═══════════════════════════════════════════════
 function addTask() {
-  const input = document.getElementById('taskInput');
-  const text = input.value.trim();
-  if (!text) { input.focus(); return; }
-  const now = Date.now();
+  const inp  = id('taskInput');
+  const text = inp.value.trim();
+  if (!text) return;
   tasks.unshift({
-    id: now.toString(36) + Math.random().toString(36).slice(2,5),
-    text, done: false,
-    category: activeCategory,
-    createdAt: now, updatedAt: now
+    id: genId(), text, done: false,
+    category: activeCat,
+    createdAt: Date.now(), updatedAt: Date.now()
   });
-  input.value = '';
-  saveLocal(); render(); updateStats(); schedulePush();
+  inp.value = '';
+  persist();
 }
 
-function toggleTask(id) {
-  const t = tasks.find(t => t.id === id);
+function toggleTask(tid) {
+  const t = tasks.find(x => x.id === tid);
   if (!t) return;
   t.done = !t.done; t.updatedAt = Date.now();
-  saveLocal(); render(); updateStats(); schedulePush();
+  persist();
 }
 
-function deleteTask(id) {
-  tasks = tasks.filter(t => t.id !== id);
-  saveLocal(); render(); updateStats(); schedulePush();
+function deleteTask(tid) {
+  tasks = tasks.filter(x => x.id !== tid);
+  persist();
 }
 
-// ── RENDER ────────────────────────────────────
-const CAT = { work:'💼 Work', personal:'🏠 Personal', shopping:'🛒 Shopping', health:'💪 Health' };
+function persist() {
+  saveLocal();
+  render(); updateStats();
+  if (currentUser) pushCloud(currentUser.uid);
+}
+
+window.__toggle = toggleTask;
+window.__delete = deleteTask;
+
+// ═══════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════
+const CAT_LABELS = {
+  work:'💼 Work', personal:'🏠 Personal',
+  shopping:'🛒 Shopping', health:'💪 Health', study:'📚 Study'
+};
 
 function render() {
-  const list = document.getElementById('taskList');
+  const list = id('taskList');
   const visible = tasks.filter(t => {
-    if (filter === 'active' && t.done) return false;
-    if (filter === 'done' && !t.done) return false;
+    if (filter === 'active' && t.done)  return false;
+    if (filter === 'done'   && !t.done) return false;
     return true;
   });
 
   if (!visible.length) {
-    const msgs = {
-      all:    ['Nothing here yet',  'Add your first task above ↑'],
-      active: ['All caught up! 🎉', 'No pending tasks'],
-      done:   ['Nothing done yet',  'Check off some tasks first']
-    };
-    const [h,p] = msgs[filter] || msgs.all;
+    const [[h,p]] = [[
+      { all:    ['Nothing here yet',   'Type a task above and hit Enter ↑'],
+        active: ['All done!',          'No active tasks remaining.'],
+        done:   ['Nothing done yet',   'Complete some tasks to see them here.']
+      }[filter]
+    ]];
     list.innerHTML = `<li class="empty"><div class="empty-icon">${filter==='done'?'✅':'📋'}</div><h3>${h}</h3><p>${p}</p></li>`;
     return;
   }
 
   list.innerHTML = visible.map(t => {
-    const ts = new Date(t.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const tag = t.category ? `<span class="task-tag">${CAT[t.category]||t.category}</span>` : '';
-    return `<li class="task-item ${t.done?'done':''}" data-id="${t.id}">
-      <div class="task-check ${t.done?'checked':''}" onclick="toggleTask('${t.id}')"></div>
+    const ts  = new Date(t.createdAt).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    const tag = t.category ? `<span class="task-cat">${CAT_LABELS[t.category]||t.category}</span>` : '';
+    return `<li class="task${t.done?' done':''}">
+      <div class="check-box${t.done?' done':''}" onclick="__toggle('${t.id}')"></div>
       <div class="task-body">
-        <div class="task-text">${esc(t.text)}</div>
-        <div class="task-meta"><span class="task-time">${ts}</span>${tag}</div>
+        <div class="task-txt">${esc(t.text)}</div>
+        <div class="task-meta"><span class="task-date">${ts}</span>${tag}</div>
       </div>
-      <div class="task-actions">
-        <button class="action-btn del" onclick="deleteTask('${t.id}')" title="Delete">✕</button>
+      <div class="task-btns">
+        <button class="tbtn del" onclick="__delete('${t.id}')" title="Delete">✕</button>
       </div>
     </li>`;
   }).join('');
 }
 
 function updateStats() {
-  const total = tasks.length, done = tasks.filter(t=>t.done).length;
-  const pct = total ? Math.round(done/total*100) : 0;
-  document.getElementById('statsFill').style.width = pct+'%';
-  document.getElementById('statsText').textContent = `${total} task${total!==1?'s':''}`;
-  document.getElementById('statsPercent').textContent = total ? `${pct}% done` : '—';
+  const total = tasks.length;
+  const done  = tasks.filter(t => t.done).length;
+  const pct   = total ? Math.round((done/total)*100) : 0;
+  id('progFill').style.width  = pct + '%';
+  id('progText').textContent  = `${total} task${total!==1?'s':''}`;
+  id('progPct').textContent   = total ? `${pct}% done` : '—';
 }
 
-function setFilter(f, btn) {
-  filter = f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+// ═══════════════════════════════════════════════
+//  EVENT WIRING
+// ═══════════════════════════════════════════════
+id('btnAdd').onclick = addTask;
+id('taskInput').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+
+id('cats').addEventListener('click', e => {
+  const btn = e.target.closest('.cat');
+  if (!btn) return;
+  document.querySelectorAll('.cat').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  activeCat = btn.dataset.c;
+});
+
+document.querySelector('.filters').addEventListener('click', e => {
+  const btn = e.target.closest('.filt');
+  if (!btn) return;
+  filter = btn.dataset.f;
+  document.querySelectorAll('.filt').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
   render();
-}
+});
 
-// ── STORAGE ───────────────────────────────────
-function saveLocal() {
-  localStorage.setItem('tf_tasks', JSON.stringify(tasks));
-}
-
-// ── SYNC UI ───────────────────────────────────
-function setSyncStatus(state, label) {
-  document.getElementById('syncDot').className = 'sync-dot ' + state;
-  document.getElementById('syncLabel').textContent = label;
-}
-
-function setConnectedUI(on) {
-  const btn = document.getElementById('setupBtn');
-  document.getElementById('connectedBanner').style.display = on ? 'flex' : 'none';
-  document.getElementById('disconnectBtn').style.display = on ? 'inline-block' : 'none';
-  if (on) { btn.textContent = '🔥 Firebase ✓'; btn.classList.add('connected'); }
-  else    { btn.textContent = '🔥 Connect Google'; btn.classList.remove('connected'); }
-}
-
-// ── MODAL ─────────────────────────────────────
-function openModal() {
-  document.getElementById('firebaseUrl').value = firebaseUrl || '';
-  document.getElementById('connectedBanner').style.display = isConnected ? 'flex' : 'none';
-  document.getElementById('disconnectBtn').style.display = isConnected ? 'inline-block' : 'none';
-  document.getElementById('modal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-}
-
-function saveConfig() {
-  const url = document.getElementById('firebaseUrl').value.trim().replace(/\/$/, '');
-  if (!url.startsWith('https://')) {
-    toast('Please enter a valid Firebase URL starting with https://', 'error');
-    return;
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
+function readSetupForm() {
+  const apiKey     = id('fApiKey').value.trim();
+  const authDomain = id('fAuthDomain').value.trim();
+  const dbUrl      = id('fDbUrl').value.trim();
+  const projectId  = id('fProjectId').value.trim();
+  if (!apiKey || !authDomain || !dbUrl || !projectId) {
+    toast('Please fill in all 4 fields.', 'err'); return null;
   }
-  firebaseUrl = url;
-  localStorage.setItem('tf_firebase_url', firebaseUrl);
-  closeModal();
-  connectFirebase(true);
+  return { apiKey, authDomain, databaseURL: dbUrl, projectId };
 }
 
-// ── TOAST ─────────────────────────────────────
-function toast(msg, type='info') {
-  const icons = { success:'✓', error:'✕', info:'◆' };
+function setSyncStatus(state, label) {
+  id('syncDot').className = 'sync-dot ' + state;
+  id('syncLabel').textContent = label;
+}
+
+function saveLocal() { localStorage.setItem(LS_TASKS, JSON.stringify(tasks)); }
+
+function show(screenId) {
+  ['setupScreen','loginScreen','appScreen'].forEach(s => {
+    id(s).classList.remove('show');
+  });
+  id(screenId).classList.add('show');
+}
+
+function showLoading() {
+  id('loadingScreen').classList.remove('gone');
+  id('loadingScreen').style.display = 'flex';
+}
+
+function hideLoading() {
+  id('loadingScreen').classList.add('gone');
+  setTimeout(() => id('loadingScreen').style.display = 'none', 500);
+}
+
+function id(i) { return document.getElementById(i); }
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg, type = 'inf') {
+  const icons = { ok:'✓', err:'✕', inf:'◆' };
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${msg}</span>`;
-  document.getElementById('toastContainer').appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; }, 3200);
-  setTimeout(() => el.remove(), 3600);
+  el.innerHTML = `<span class="ti">${icons[type]||'◆'}</span><span>${msg}</span>`;
+  id('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
 }
-
-// ── UTIL ──────────────────────────────────────
-function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-init();
 </script>
 </body>
 </html>
