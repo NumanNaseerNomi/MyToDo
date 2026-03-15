@@ -50,6 +50,13 @@ const LS_TASKS  = "tf_tasks_v3";
 const LS_BACKUP = "tf_backup_ts";
 const LS_USER   = "tf_user_cache";  // cached user info for offline sessions
 
+const EMPTY_MESSAGES =
+{
+  all:    ["Nothing here yet",  "Type a task above and hit Enter ↑"],
+  active: ["All clear!",        "No active tasks."],
+  done:   ["Nothing done yet",  "Check off some tasks."]
+};
+
 // ══════════════════════════════════════════════════════════
 //  BOOT — app is ALWAYS usable, even without network
 // ══════════════════════════════════════════════════════════
@@ -353,12 +360,6 @@ const CAT_LABELS = {
   shopping: "🛒 Shopping",
   health:   "💪 Health",
   study:    "📚 Study"
-};
-
-const EMPTY_MESSAGES = {
-  all:    ["Nothing here yet",  "Type a task above and hit Enter ↑"],
-  active: ["All clear!",        "No active tasks."],
-  done:   ["Nothing done yet",  "Check off some tasks."]
 };
 
 function render() {
