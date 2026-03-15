@@ -60,6 +60,9 @@ self.addEventListener("fetch", (event) => {
 
   if (isFirebaseApi) return; // don't intercept
 
+  // Only handle http:// and https:// requests — skip chrome-extension://, data:, etc.
+  if (!url.protocol.startsWith("http")) return;
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       // Serve from cache if available
