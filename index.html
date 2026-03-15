@@ -363,16 +363,6 @@ import { getDatabase, ref, set, get, onValue, off }
 // ║  (only you, the developer, do this once) ║
 // ╚══════════════════════════════════════════╝
 const FIREBASE_CONFIG =
-// {
-//   apiKey:            "PASTE_YOUR_API_KEY_HERE",
-//   authDomain:        "PASTE_YOUR_AUTH_DOMAIN_HERE",
-//   databaseURL:       "PASTE_YOUR_DATABASE_URL_HERE",
-//   projectId:         "PASTE_YOUR_PROJECT_ID_HERE",
-//   storageBucket:     "PASTE_YOUR_STORAGE_BUCKET_HERE",
-//   messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID_HERE",
-//   appId:             "PASTE_YOUR_APP_ID_HERE"
-// };
-
 {
     apiKey: "AIzaSyCdxxgCseDsDN7J15_zDLdfsIPTGg58K9c",
     authDomain: "mytodo-4384b.firebaseapp.com",
@@ -488,15 +478,33 @@ function startSync(uid) {
   if (liveRef) { off(liveRef); liveRef = null; }
   liveRef = ref(fbDb, `users/${uid}/tasks`);
 
+  let firstSnapshot = true;
+
   onValue(liveRef, snap => {
     const remote = snap.val();
-    if (Array.isArray(remote) && remote.length) {
-      tasks = merge(tasks, remote);
-      saveLocal();
+
+    if (firstSnapshot) {
+      firstSnapshot = false;
+      if (Array.isArray(remote) && remote.length) {
+        // Cloud has data → cloud wins completely, overwrite local
+        tasks = remote.slice().sort((a,b) => b.createdAt - a.createdAt);
+        saveLocal();
+      } else if (tasks.length) {
+        // Cloud is empty but we have local tasks → upload them once
+        pushCloud(uid); return;
+      }
     } else {
-      // Nothing in cloud — push local tasks up
-      pushCloud(uid); return;
+      // Subsequent updates (real-time changes from another device, or our own push)
+      // Cloud is always the truth — just replace local
+      if (Array.isArray(remote)) {
+        tasks = remote.slice().sort((a,b) => b.createdAt - a.createdAt);
+        saveLocal();
+      } else {
+        tasks = [];
+        saveLocal();
+      }
     }
+
     render(); updateStats(); updateSubText();
     setSyncStatus('live', 'Synced ✓');
   }, err => {
@@ -542,7 +550,7 @@ g('btnRestore').onclick = async () => {
       setSyncStatus('live', 'Synced ✓');
       toast('No backup found for your account yet.', 'in'); return;
     }
-    tasks = merge(tasks, data.tasks);
+    tasks = data.tasks.slice().sort((a,b) => b.createdAt - a.createdAt);
     saveLocal();
     await pushCloud(user.uid);
     render(); updateStats(); updateSubText();
@@ -640,14 +648,7 @@ document.querySelector('.filters').addEventListener('click', e => {
 });
 
 // ─── Helpers ─────────────────────────────────
-function merge(local, remote) {
-  const m = new Map();
-  [...remote, ...local].forEach(t => {
-    const ex = m.get(t.id);
-    if (!ex || (t.updatedAt||0) > (ex.updatedAt||0)) m.set(t.id, t);
-  });
-  return Array.from(m.values()).sort((a,b) => b.createdAt - a.createdAt);
-}
+
 function setSyncStatus(s,l) { g('syncDot').className='sync-dot '+s; g('syncLbl').textContent=l; }
 function saveLocal() { localStorage.setItem(LS_T, JSON.stringify(tasks)); }
 function g(i) { return document.getElementById(i); }
