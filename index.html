@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TaskFlow</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0e0e10; --surface:#17171b; --surface2:#1e1e24; --border:#2a2a35;
+    --accent:#c8fb4e; --accent2:#4efbca; --danger:#fb4e6a;
+    --text:#f0f0f4; --muted:#7a7a8c; --done-text:#444455;
+    --radius:12px; --mono:'DM Mono',monospace; --display:'Syne',sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5}
+  .app{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:40px 20px 80px}
+
+  header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:40px;gap:16px}
+  .brand h1{font-size:clamp(2rem,6vw,3.2rem);font-weight:800;letter-spacing:-0.04em;line-height:1}
+  .brand h1 span{color:var(--accent)}
+  .brand p{font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-top:6px;letter-spacing:.08em;text-transform:uppercase}
+  .sync-area{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:140px}
+  .sync-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.68rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:background .4s}
+  .sync-dot.syncing{background:var(--accent);animation:pulse 1s infinite}
+  .sync-dot.synced{background:var(--accent2)}
+  .sync-dot.error{background:var(--danger)}
+  .sync-dot.offline{background:#555}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .btn-setup{font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap}
+  .btn-setup:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-setup.connected{border-color:rgba(78,251,202,.35);color:var(--accent2)}
+
+  .stats-label{font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;padding:0 2px}
+  .stats-label span:last-child{color:var(--accent2)}
+  .stats{height:4px;background:var(--surface2);border-radius:var(--radius);overflow:hidden;margin-bottom:28px}
+  .stats-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s cubic-bezier(.34,1.56,.64,1);border-radius:var(--radius)}
+
+  .input-row{display:flex;gap:10px;margin-bottom:12px}
+  .task-input{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 18px;font-family:var(--display);font-size:.95rem;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
+  .task-input::placeholder{color:var(--muted)}
+  .task-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(200,251,78,.08)}
+  .add-btn{background:var(--accent);color:#0e0e10;border:none;border-radius:var(--radius);width:50px;font-size:1.5rem;font-weight:700;cursor:pointer;transition:transform .15s,background .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .add-btn:hover{background:#d9ff5a;transform:scale(1.05)}
+  .add-btn:active{transform:scale(.96)}
+
+  .categories{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+  .cat-pill{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:999px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;user-select:none}
+  .cat-pill:hover{border-color:var(--accent);color:var(--accent)}
+  .cat-pill.active{background:var(--accent);border-color:var(--accent);color:#0e0e10;font-weight:600}
+
+  .filter-bar{display:flex;gap:8px;margin-bottom:24px;background:var(--surface);border-radius:var(--radius);padding:4px}
+  .filter-btn{flex:1;font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;padding:8px 6px;border:none;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+  .filter-btn.active{background:var(--surface2);color:var(--text)}
+  .filter-btn:hover:not(.active){color:var(--text)}
+
+  .task-list{display:flex;flex-direction:column;gap:8px;list-style:none}
+  .task-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;transition:border-color .2s,transform .15s,opacity .3s;animation:slideIn .2s ease;position:relative;overflow:hidden}
+  .task-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:0;transition:opacity .2s}
+  .task-item:hover{border-color:#3a3a48;transform:translateX(2px)}
+  .task-item:hover::before{opacity:1}
+  .task-item.done{opacity:.5}
+  .task-item.done::before{background:var(--accent2);opacity:1}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+  .task-check{width:22px;height:22px;border:1.5px solid var(--border);border-radius:6px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;background:transparent;user-select:none}
+  .task-check:hover{border-color:var(--accent);background:rgba(200,251,78,.05)}
+  .task-check.checked{background:var(--accent2);border-color:var(--accent2)}
+  .task-check.checked::after{content:'✓';font-size:.75rem;color:#0e0e10;font-weight:700}
+
+  .task-body{flex:1;min-width:0}
+  .task-text{font-size:.92rem;font-weight:400;line-height:1.4;word-break:break-word;transition:color .2s}
+  .task-item.done .task-text{text-decoration:line-through;color:var(--done-text)}
+  .task-meta{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap}
+  .task-time{font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.04em}
+  .task-tag{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--surface2);color:var(--muted)}
+
+  .task-actions{display:flex;gap:4px;opacity:0;transition:opacity .2s;flex-shrink:0}
+  .task-item:hover .task-actions{opacity:1}
+  .action-btn{width:28px;height:28px;border-radius:6px;border:none;background:var(--surface2);color:var(--muted);cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+  .action-btn:hover{background:var(--border);color:var(--text)}
+  .action-btn.del:hover{background:rgba(251,78,106,.15);color:var(--danger)}
+
+  .empty{text-align:center;padding:60px 20px;animation:fadeIn .3s ease}
+  .empty-icon{font-size:3rem;margin-bottom:16px;opacity:.4}
+  .empty h3{font-weight:700;font-size:1.1rem;color:var(--muted);margin-bottom:8px}
+  .empty p{font-family:var(--mono);font-size:.72rem;color:#444455;letter-spacing:.04em}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+  /* Modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-backdrop.open{display:flex;animation:fadeIn .2s ease}
+  .modal{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:32px;max-width:500px;width:100%;position:relative;max-height:90vh;overflow-y:auto}
+  .modal-close{position:absolute;top:16px;right:16px;background:var(--surface2);border:none;border-radius:6px;color:var(--muted);font-size:1rem;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+  .modal-close:hover{color:var(--text);background:var(--border)}
+  .modal h2{font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px}
+  .modal h2 span{color:var(--accent)}
+  .modal-sub{font-family:var(--mono);font-size:.72rem;color:var(--muted);line-height:1.7;margin-bottom:24px}
+
+  .connected-banner{background:rgba(78,251,202,.07);border:1px solid rgba(78,251,202,.25);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:.72rem;color:var(--accent2);display:flex;align-items:center;gap:10px}
+
+  .steps{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+  .step{display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)}
+  .step-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#0e0e10;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .step-body{flex:1}
+  .step-title{font-size:.88rem;font-weight:700;margin-bottom:4px}
+  .step-desc{font-family:var(--mono);font-size:.68rem;color:var(--muted);line-height:1.6}
+  .step-desc a{color:var(--accent2);text-decoration:none}
+  .step-desc a:hover{text-decoration:underline}
+  .step-desc code{background:var(--bg);padding:2px 6px;border-radius:4px;color:var(--accent);font-size:.65rem}
+
+  .modal label{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .modal input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:.82rem;color:var(--text);outline:none;margin-bottom:16px;transition:border-color .2s}
+  .modal input:focus{border-color:var(--accent)}
+  .modal input::placeholder{color:#3a3a4a}
+
+  .modal-actions{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap}
+  .btn-primary{flex:1;background:var(--accent);color:#0e0e10;border:none;border-radius:8px;padding:13px;font-family:var(--display);font-size:.9rem;font-weight:700;cursor:pointer;transition:background .2s;min-width:120px}
+  .btn-primary:hover{background:#d9ff5a}
+  .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:13px 18px;font-family:var(--display);font-size:.88rem;cursor:pointer;transition:all .2s}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-danger{background:transparent;border:1.5px solid rgba(251,78,106,.3);color:var(--danger);border-radius:8px;padding:13px 14px;font-family:var(--display);font-size:.82rem;cursor:pointer;transition:all .2s}
+  .btn-danger:hover{background:rgba(251,78,106,.1)}
+
+  /* Toast */
+  .toast-container{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px}
+  .toast{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:.72rem;color:var(--text);display:flex;align-items:center;gap:8px;animation:toastIn .3s ease;max-width:300px;box-shadow:0 4px 24px rgba(0,0,0,.4);transition:opacity .4s}
+  .toast.success .toast-icon{color:var(--accent2)}
+  .toast.error   .toast-icon{color:var(--danger)}
+  .toast.info    .toast-icon{color:var(--accent)}
+  @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+  @media(max-width:500px){
+    .sync-area{min-width:auto}
+    .modal{padding:24px 16px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="brand">
+      <h1>Task<span>Flow</span></h1>
+      <p>Local-first · Firebase sync</p>
+    </div>
+    <div class="sync-area">
+      <div class="sync-status">
+        <div class="sync-dot offline" id="syncDot"></div>
+        <span id="syncLabel">Local only</span>
+      </div>
+      <button class="btn-setup" id="setupBtn" onclick="openModal()">🔥 Connect Google</button>
+    </div>
+  </header>
+
+  <div class="stats-label">
+    <span id="statsText">0 tasks</span>
+    <span id="statsPercent">—</span>
+  </div>
+  <div class="stats"><div class="stats-fill" id="statsFill" style="width:0%"></div></div>
+
+  <div style="margin-bottom:20px;margin-top:18px">
+    <div class="input-row">
+      <input class="task-input" id="taskInput" placeholder="What needs to be done?" maxlength="200"/>
+      <button class="add-btn" onclick="addTask()">+</button>
+    </div>
+    <div class="categories" id="catSelector">
+      <button class="cat-pill active" data-cat="">All</button>
+      <button class="cat-pill" data-cat="work">💼 Work</button>
+      <button class="cat-pill" data-cat="personal">🏠 Personal</button>
+      <button class="cat-pill" data-cat="shopping">🛒 Shopping</button>
+      <button class="cat-pill" data-cat="health">💪 Health</button>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('active',this)">Active</button>
+    <button class="filter-btn" onclick="setFilter('done',this)">Done</button>
+  </div>
+
+  <ul class="task-list" id="taskList"></ul>
+</div>
+
+<!-- Setup Modal -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>Connect <span>Google Firebase</span></h2>
+    <p class="modal-sub">
+      Firebase is Google's free cloud database — sign in with your Google account and paste one URL below.
+      Your tasks will sync across every device instantly. Free tier = 1 GB storage, 10 GB/month transfer.
+    </p>
+
+    <div id="connectedBanner" style="display:none" class="connected-banner">
+      <span>✓</span><span>Firebase connected — tasks are syncing live</span>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Open Firebase Console</div>
+          <div class="step-desc">Go to <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> and sign in with your Google account.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Create a project</div>
+          <div class="step-desc">Click <strong>Add project</strong> → give it a name (e.g. <code>my-tasks</code>) → Continue → Create project.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Enable Realtime Database</div>
+          <div class="step-desc">In the left menu: <strong>Build → Realtime Database → Create database</strong>. Pick any region. Choose <strong>Start in test mode</strong> → Enable.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">Copy & paste the URL below</div>
+          <div class="step-desc">At the top of the Realtime Database page you'll see a URL like:<br><code>https://my-tasks-xxxx-default-rtdb.firebaseio.com</code><br>Copy it and paste below. Done!</div>
+        </div>
+      </div>
+    </div>
+
+    <label>Firebase Database URL</label>
+    <input id="firebaseUrl" placeholder="https://your-project-default-rtdb.firebaseio.com" autocomplete="off" spellcheck="false"/>
+
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveConfig()">Connect & Sync</button>
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-danger" id="disconnectBtn" style="display:none" onclick="disconnect()">Disconnect</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── STATE ─────────────────────────────────────
+let tasks = [];
+let filter = 'all';
+let activeCategory = '';
+let firebaseUrl = '';
+let isConnected = false;
+let syncTimer = null;
+let pollInterval = null;
+
+// ── INIT ──────────────────────────────────────
+function init() {
+  try { tasks = JSON.parse(localStorage.getItem('tf_tasks') || '[]'); } catch(e){ tasks=[]; }
+  firebaseUrl = localStorage.getItem('tf_firebase_url') || '';
+
+  document.getElementById('catSelector').addEventListener('click', e => {
+    const pill = e.target.closest('.cat-pill');
+    if (!pill) return;
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    activeCategory = pill.dataset.cat;
+  });
+
+  document.getElementById('taskInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTask();
+  });
+
+  document.getElementById('modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  render(); updateStats();
+
+  if (firebaseUrl) connectFirebase(false);
+}
+
+// ── FIREBASE ──────────────────────────────────
+function connectFirebase(showToast = true) {
+  if (!firebaseUrl) return;
+  setSyncStatus('syncing', 'Connecting…');
+
+  fetch(`${firebaseUrl}/taskflow.json`)
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(data => {
+      if (data && Array.isArray(data.tasks)) mergeFromRemote(data.tasks);
+      isConnected = true;
+      setSyncStatus('synced', 'Live ✓');
+      setConnectedUI(true);
+      if (showToast) toast('Connected to Firebase!', 'success');
+      pushAll(); // push any local-only tasks
+      startPolling();
+    })
+    .catch(err => {
+      setSyncStatus('error', 'Failed');
+      toast('Could not connect. Check the URL and make sure Realtime Database is enabled.', 'error');
+      console.error('Firebase error:', err);
+    });
+}
+
+function startPolling() {
+  if (pollInterval) clearInterval(pollInterval);
+  pollInterval = setInterval(() => {
+    if (!isConnected || !firebaseUrl) return;
+    fetch(`${firebaseUrl}/taskflow.json`)
+      .then(r => r.json())
+      .then(data => {
+        if (data && Array.isArray(data.tasks)) mergeFromRemote(data.tasks);
+      }).catch(() => {});
+  }, 20000); // poll every 20s for live updates from other devices
+}
+
+function pushAll() {
+  if (!isConnected || !firebaseUrl) return;
+  setSyncStatus('syncing', 'Saving…');
+  fetch(`${firebaseUrl}/taskflow.json`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tasks, lastUpdated: Date.now() })
+  })
+  .then(r => {
+    if (r.ok) setSyncStatus('synced', 'Saved ✓');
+    else setSyncStatus('error', 'Error');
+  })
+  .catch(() => setSyncStatus('error', 'Offline'));
+}
+
+function schedulePush() {
+  if (!isConnected) return;
+  if (syncTimer) clearTimeout(syncTimer);
+  setSyncStatus('syncing', 'Pending…');
+  syncTimer = setTimeout(pushAll, 1500);
+}
+
+function mergeFromRemote(remote) {
+  const map = new Map();
+  // remote first, then local overrides (local is more recent if same id)
+  [...remote, ...tasks].forEach(t => {
+    if (!map.has(t.id)) {
+      map.set(t.id, t);
+    } else {
+      const ex = map.get(t.id);
+      if ((t.updatedAt || t.createdAt || 0) > (ex.updatedAt || ex.createdAt || 0)) {
+        map.set(t.id, t);
+      }
+    }
+  });
+  const merged = Array.from(map.values()).sort((a,b) => b.createdAt - a.createdAt);
+  // Only re-render if changed
+  if (JSON.stringify(merged) !== JSON.stringify(tasks)) {
+    tasks = merged;
+    saveLocal();
+    render();
+    updateStats();
+  }
+}
+
+function disconnect() {
+  if (!confirm('Disconnect Firebase? Your tasks remain saved locally.')) return;
+  isConnected = false;
+  firebaseUrl = '';
+  if (pollInterval) clearInterval(pollInterval);
+  if (syncTimer) clearTimeout(syncTimer);
+  localStorage.removeItem('tf_firebase_url');
+  setSyncStatus('offline', 'Local only');
+  setConnectedUI(false);
+  closeModal();
+  toast('Disconnected from Firebase', 'info');
+}
+
+// ── CRUD ──────────────────────────────────────
+function addTask() {
+  const input = document.getElementById('taskInput');
+  const text = input.value.trim();
+  if (!text) { input.focus(); return; }
+  const now = Date.now();
+  tasks.unshift({
+    id: now.toString(36) + Math.random().toString(36).slice(2,5),
+    text, done: false,
+    category: activeCategory,
+    createdAt: now, updatedAt: now
+  });
+  input.value = '';
+  saveLocal(); render(); updateStats(); schedulePush();
+}
+
+function toggleTask(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  t.done = !t.done; t.updatedAt = Date.now();
+  saveLocal(); render(); updateStats(); schedulePush();
+}
+
+function deleteTask(id) {
+  tasks = tasks.filter(t => t.id !== id);
+  saveLocal(); render(); updateStats(); schedulePush();
+}
+
+// ── RENDER ────────────────────────────────────
+const CAT = { work:'💼 Work', personal:'🏠 Personal', shopping:'🛒 Shopping', health:'💪 Health' };
+
+function render() {
+  const list = document.getElementById('taskList');
+  const visible = tasks.filter(t => {
+    if (filter === 'active' && t.done) return false;
+    if (filter === 'done' && !t.done) return false;
+    return true;
+  });
+
+  if (!visible.length) {
+    const msgs = {
+      all:    ['Nothing here yet',  'Add your first task above ↑'],
+      active: ['All caught up! 🎉', 'No pending tasks'],
+      done:   ['Nothing done yet',  'Check off some tasks first']
+    };
+    const [h,p] = msgs[filter] || msgs.all;
+    list.innerHTML = `<li class="empty"><div class="empty-icon">${filter==='done'?'✅':'📋'}</div><h3>${h}</h3><p>${p}</p></li>`;
+    return;
+  }
+
+  list.innerHTML = visible.map(t => {
+    const ts = new Date(t.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const tag = t.category ? `<span class="task-tag">${CAT[t.category]||t.category}</span>` : '';
+    return `<li class="task-item ${t.done?'done':''}" data-id="${t.id}">
+      <div class="task-check ${t.done?'checked':''}" onclick="toggleTask('${t.id}')"></div>
+      <div class="task-body">
+        <div class="task-text">${esc(t.text)}</div>
+        <div class="task-meta"><span class="task-time">${ts}</span>${tag}</div>
+      </div>
+      <div class="task-actions">
+        <button class="action-btn del" onclick="deleteTask('${t.id}')" title="Delete">✕</button>
+      </div>
+    </li>`;
+  }).join('');
+}
+
+function updateStats() {
+  const total = tasks.length, done = tasks.filter(t=>t.done).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('statsFill').style.width = pct+'%';
+  document.getElementById('statsText').textContent = `${total} task${total!==1?'s':''}`;
+  document.getElementById('statsPercent').textContent = total ? `${pct}% done` : '—';
+}
+
+function setFilter(f, btn) {
+  filter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+// ── STORAGE ───────────────────────────────────
+function saveLocal() {
+  localStorage.setItem('tf_tasks', JSON.stringify(tasks));
+}
+
+// ── SYNC UI ───────────────────────────────────
+function setSyncStatus(state, label) {
+  document.getElementById('syncDot').className = 'sync-dot ' + state;
+  document.getElementById('syncLabel').textContent = label;
+}
+
+function setConnectedUI(on) {
+  const btn = document.getElementById('setupBtn');
+  document.getElementById('connectedBanner').style.display = on ? 'flex' : 'none';
+  document.getElementById('disconnectBtn').style.display = on ? 'inline-block' : 'none';
+  if (on) { btn.textContent = '🔥 Firebase ✓'; btn.classList.add('connected'); }
+  else    { btn.textContent = '🔥 Connect Google'; btn.classList.remove('connected'); }
+}
+
+// ── MODAL ─────────────────────────────────────
+function openModal() {
+  document.getElementById('firebaseUrl').value = firebaseUrl || '';
+  document.getElementById('connectedBanner').style.display = isConnected ? 'flex' : 'none';
+  document.getElementById('disconnectBtn').style.display = isConnected ? 'inline-block' : 'none';
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function saveConfig() {
+  const url = document.getElementById('firebaseUrl').value.trim().replace(/\/$/, '');
+  if (!url.startsWith('https://')) {
+    toast('Please enter a valid Firebase URL starting with https://', 'error');
+    return;
+  }
+  firebaseUrl = url;
+  localStorage.setItem('tf_firebase_url', firebaseUrl);
+  closeModal();
+  connectFirebase(true);
+}
+
+// ── TOAST ─────────────────────────────────────
+function toast(msg, type='info') {
+  const icons = { success:'✓', error:'✕', info:'◆' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${msg}</span>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; }, 3200);
+  setTimeout(() => el.remove(), 3600);
+}
+
+// ── UTIL ──────────────────────────────────────
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+init();
+</script>
+</body>
+</html>
