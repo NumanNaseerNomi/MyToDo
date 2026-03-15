@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════
-//  TaskFlow — Service Worker (sw.js)
+//  MyToDo — Service Worker (sw.js)
 //  Caches app shell + Firebase SDK + fonts on first visit.
 //  On subsequent visits (even offline) everything loads from cache.
 // ══════════════════════════════════════════════════════════

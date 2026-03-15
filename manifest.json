@@ -1,6 +1,6 @@
 {
-  "name": "TaskFlow",
-  "short_name": "TaskFlow",
+  "name": "MyTodo",
+  "short_name": "MyTodo",
   "description": "Local-first todo app with Google sync",
   "start_url": "./",
   "display": "standalone",

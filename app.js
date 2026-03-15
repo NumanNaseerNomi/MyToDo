@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════
-//  TaskFlow — app.js
+//  MyTodo — app.js
 //  Firebase imports (ES module, loaded via type="module")
 // ══════════════════════════════════════════════════════════
 
