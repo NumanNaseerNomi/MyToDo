@@ -7,68 +7,41 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg:       #080810;
-  --bg2:      #0d0d1a;
-  --surf:     #111120;
-  --surf2:    #181830;
-  --border:   #1e1e38;
-  --border2:  #282848;
-  --accent:   #7c6aff;
-  --aglow:    rgba(124,106,255,.18);
-  --alight:   #a594ff;
-  --green:    #3cffa0;
-  --gdim:     rgba(60,255,160,.1);
-  --red:      #ff4e6a;
-  --yellow:   #ffc73c;
-  --text:     #e8e8f8;
-  --text2:    #9090b8;
-  --text3:    #484870;
-  --r:        14px;
-  --mono:     'JetBrains Mono', monospace;
-  --sans:     'Bricolage Grotesque', sans-serif;
+  --bg:     #080810;
+  --bg2:    #0d0d1a;
+  --surf:   #111120;
+  --surf2:  #181830;
+  --brd:    #1e1e38;
+  --brd2:   #282848;
+  --acc:    #7c6aff;
+  --aglow:  rgba(124,106,255,.18);
+  --alit:   #a594ff;
+  --grn:    #3cffa0;
+  --gdim:   rgba(60,255,160,.1);
+  --red:    #ff4e6a;
+  --ylw:    #ffc73c;
+  --txt:    #e8e8f8;
+  --txt2:   #9090b8;
+  --txt3:   #484870;
+  --r:      14px;
+  --mono:   'JetBrains Mono', monospace;
+  --sans:   'Bricolage Grotesque', sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
-
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
 body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;filter:blur(90px);z-index:0}
 body::before{width:700px;height:700px;background:radial-gradient(circle,rgba(124,106,255,.055) 0%,transparent 70%);top:-250px;right:-250px;animation:orb1 14s ease-in-out infinite alternate}
 body::after{width:500px;height:500px;background:radial-gradient(circle,rgba(60,255,160,.035) 0%,transparent 70%);bottom:-150px;left:-150px;animation:orb2 17s ease-in-out infinite alternate}
 @keyframes orb1{from{transform:translate(0,0)}to{transform:translate(-50px,50px)}}
 @keyframes orb2{from{transform:translate(0,0)}to{transform:translate(50px,-40px)}}
 
-/* ── LOADING ── */
-#loadScr{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .5s,visibility .5s}
+/* ── LOADER ── */
+#loadScr{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .4s,visibility .4s}
 #loadScr.gone{opacity:0;visibility:hidden;pointer-events:none}
-.spin{width:40px;height:40px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite}
+.spin{width:40px;height:40px;border:2px solid var(--brd2);border-top-color:var(--acc);border-radius:50%;animation:spin .75s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.load-brand{font-size:1.4rem;font-weight:800;letter-spacing:-.04em;color:var(--text3)}
-.load-brand b{color:var(--alight)}
-
-/* ── FIREBASE SETUP MODAL (first-time only) ── */
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:800;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-backdrop.open{display:flex;animation:fadeIn .2s ease}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal{background:var(--surf);border:1px solid var(--border2);border-radius:20px;padding:32px;max-width:460px;width:100%;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6),0 0 0 1px rgba(124,106,255,.06);animation:riseIn .3s cubic-bezier(.34,1.2,.64,1)}
-@keyframes riseIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.modal h2{font-size:1.25rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
-.modal h2 em{font-style:normal;color:var(--alight)}
-.modal>.sub{font-family:var(--mono);font-size:.7rem;color:var(--text2);line-height:1.7;margin-bottom:22px}
-.modal-close{position:absolute;top:14px;right:14px;background:var(--surf2);border:none;border-radius:7px;color:var(--text3);width:30px;height:30px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.modal-close:hover{color:var(--text);background:var(--border2)}
-
-.fields{display:flex;flex-direction:column;gap:11px;margin-bottom:20px}
-.field label{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
-.field input{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:9px;padding:11px 14px;font-family:var(--mono);font-size:.82rem;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
-.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--aglow)}
-.field input::placeholder{color:var(--text3)}
-
-.btn-primary{width:100%;background:linear-gradient(135deg,var(--accent),#9b8cff);color:#fff;border:none;border-radius:11px;padding:13px;font-family:var(--sans);font-size:.93rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(124,106,255,.3);margin-bottom:10px}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(124,106,255,.45)}
-
-.hint-box{background:rgba(124,106,255,.04);border:1px solid rgba(124,106,255,.12);border-radius:9px;padding:14px;font-family:var(--mono);font-size:.63rem;color:var(--text2);line-height:1.9}
-.hint-box a{color:var(--green);text-decoration:none}
-.hint-box a:hover{text-decoration:underline}
-.hint-box strong{color:var(--alight)}
+.load-brand{font-size:1.4rem;font-weight:800;letter-spacing:-.04em;color:var(--txt3)}
+.load-brand b{color:var(--alit)}
 
 /* ── MAIN APP ── */
 .app{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:36px 20px 100px}
@@ -76,187 +49,172 @@ body::after{width:500px;height:500px;background:radial-gradient(circle,rgba(60,2
 /* Header */
 .hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;gap:16px}
 .hdr-left h1{font-size:clamp(1.7rem,5vw,2.6rem);font-weight:800;letter-spacing:-.05em;line-height:1}
-.hdr-left h1 em{font-style:normal;color:var(--alight)}
+.hdr-left h1 em{font-style:normal;color:var(--alit)}
 .hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex-shrink:0}
 
-/* Sync status */
-.sync-row{display:flex;align-items:center;gap:8px}
-.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);transition:background .4s,box-shadow .4s;flex-shrink:0}
-.sync-dot.live{background:var(--green);box-shadow:0 0 7px var(--green)}
-.sync-dot.saving{background:var(--yellow);animation:blink .6s infinite}
-.sync-dot.error{background:var(--red)}
-.sync-dot.local{background:var(--text3)}
+/* Sync pill */
+.sync-row{display:flex;align-items:center;gap:6px}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--txt3);transition:background .4s,box-shadow .4s;flex-shrink:0}
+.sync-dot.live  {background:var(--grn);box-shadow:0 0 7px var(--grn)}
+.sync-dot.saving{background:var(--ylw);animation:blink .6s infinite}
+.sync-dot.error {background:var(--red)}
+.sync-dot.local {background:var(--txt3)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.sync-lbl{font-family:var(--mono);font-size:.62rem;color:var(--text3);letter-spacing:.05em;text-transform:uppercase}
+.sync-lbl{font-family:var(--mono);font-size:.62rem;color:var(--txt3);letter-spacing:.05em;text-transform:uppercase}
 
-/* Google sign-in button (compact, in header) */
-.btn-google-small{display:flex;align-items:center;gap:8px;background:#fff;color:#1a1a2e;border:none;border-radius:999px;padding:7px 14px 7px 8px;font-family:var(--sans);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 2px 10px rgba(0,0,0,.3)}
-.btn-google-small:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.4)}
-.btn-google-small svg{width:18px;height:18px;flex-shrink:0}
+/* Sign-in button (header, logged out) */
+.btn-g-sm{display:flex;align-items:center;gap:7px;background:#fff;color:#1a1a2e;border:none;border-radius:999px;padding:7px 14px 7px 8px;font-family:var(--sans);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.btn-g-sm:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.btn-g-sm svg{width:16px;height:16px;flex-shrink:0}
 
-/* User chip (shown after login) */
-.user-chip{display:flex;align-items:center;gap:9px;background:var(--surf);border:1px solid var(--border2);border-radius:999px;padding:5px 14px 5px 5px;animation:riseIn .3s ease}
-.u-photo{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid var(--accent);flex-shrink:0}
-.u-init{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--alight));color:#fff;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--accent);flex-shrink:0}
-.u-name{font-size:.75rem;font-weight:600;letter-spacing:-.01em;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.btn-signout{background:none;border:none;font-family:var(--mono);font-size:.58rem;color:var(--text3);cursor:pointer;text-decoration:underline;padding:0;transition:color .2s}
-.btn-signout:hover{color:var(--red)}
+/* User chip */
+.user-chip{display:flex;align-items:center;gap:9px;background:var(--surf);border:1px solid var(--brd2);border-radius:999px;padding:5px 14px 5px 5px;animation:riseIn .3s ease}
+@keyframes riseIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.u-photo{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1.5px solid var(--acc);flex-shrink:0}
+.u-init{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--alit));color:#fff;font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.u-info{display:flex;flex-direction:column;gap:1px}
+.u-name{font-size:.75rem;font-weight:700;letter-spacing:-.01em;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.u-email{font-family:var(--mono);font-size:.58rem;color:var(--txt3);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-so{background:none;border:none;font-family:var(--mono);font-size:.58rem;color:var(--txt3);cursor:pointer;text-decoration:underline;padding:0;transition:color .2s;margin-top:1px}
+.btn-so:hover{color:var(--red)}
 
 /* Progress */
 .prog-wrap{margin-bottom:28px}
 .prog-labels{display:flex;justify-content:space-between;margin-bottom:8px}
-.prog-labels span{font-family:var(--mono);font-size:.67rem;color:var(--text2)}
-.prog-labels .pct{color:var(--green)}
+.prog-labels span{font-family:var(--mono);font-size:.67rem;color:var(--txt2)}
+.prog-labels .pct{color:var(--grn)}
 .prog-track{height:3px;background:var(--surf2);border-radius:999px;overflow:hidden}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:999px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--grn));border-radius:999px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
 
 /* Input */
 .input-row{display:flex;gap:10px;margin-bottom:12px}
-.task-input{flex:1;background:var(--surf);border:1px solid var(--border2);border-radius:var(--r);padding:14px 18px;font-family:var(--sans);font-size:.95rem;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
-.task-input::placeholder{color:var(--text3)}
-.task-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--aglow)}
-.add-btn{width:52px;background:linear-gradient(135deg,var(--accent),#9b8cff);border:none;border-radius:var(--r);font-size:1.4rem;color:#fff;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 4px 16px rgba(124,106,255,.3)}
+.task-input{flex:1;background:var(--surf);border:1px solid var(--brd2);border-radius:var(--r);padding:14px 18px;font-family:var(--sans);font-size:.95rem;color:var(--txt);outline:none;transition:border-color .2s,box-shadow .2s}
+.task-input::placeholder{color:var(--txt3)}
+.task-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--aglow)}
+.add-btn{width:52px;background:linear-gradient(135deg,var(--acc),#9b8cff);border:none;border-radius:var(--r);font-size:1.4rem;color:#fff;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 4px 16px rgba(124,106,255,.3)}
 .add-btn:hover{transform:scale(1.06);box-shadow:0 6px 24px rgba(124,106,255,.45)}
 .add-btn:active{transform:scale(.94)}
 
 /* Categories */
 .cats{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
-.cat{font-family:var(--mono);font-size:.62rem;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border-radius:999px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;transition:all .2s}
-.cat:hover{border-color:var(--accent);color:var(--alight)}
-.cat.on{background:rgba(124,106,255,.14);border-color:var(--accent);color:var(--alight)}
+.cat{font-family:var(--mono);font-size:.62rem;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border-radius:999px;border:1px solid var(--brd2);background:transparent;color:var(--txt3);cursor:pointer;transition:all .2s}
+.cat:hover{border-color:var(--acc);color:var(--alit)}
+.cat.on{background:rgba(124,106,255,.14);border-color:var(--acc);color:var(--alit)}
 
 /* Filters */
 .filters{display:flex;gap:5px;margin-bottom:22px;background:var(--surf);border-radius:var(--r);padding:4px}
-.filt{flex:1;font-family:var(--mono);font-size:.62rem;letter-spacing:.05em;text-transform:uppercase;padding:8px 6px;border:none;border-radius:10px;background:transparent;color:var(--text3);cursor:pointer;transition:all .2s}
-.filt.on{background:var(--surf2);color:var(--text)}
-.filt:hover:not(.on){color:var(--text)}
+.filt{flex:1;font-family:var(--mono);font-size:.62rem;letter-spacing:.05em;text-transform:uppercase;padding:8px 6px;border:none;border-radius:10px;background:transparent;color:var(--txt3);cursor:pointer;transition:all .2s}
+.filt.on{background:var(--surf2);color:var(--txt)}
+.filt:hover:not(.on){color:var(--txt)}
 
-/* Task list */
+/* Tasks */
 .tasks{display:flex;flex-direction:column;gap:7px;list-style:none}
-.task{background:var(--surf);border:1px solid var(--border2);border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;animation:taskIn .22s cubic-bezier(.34,1.2,.64,1);transition:border-color .2s,transform .15s,box-shadow .2s}
-.task::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:0;transition:opacity .2s;border-radius:0 3px 3px 0}
+.task{background:var(--surf);border:1px solid var(--brd2);border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;animation:taskIn .22s cubic-bezier(.34,1.2,.64,1);transition:border-color .2s,transform .15s,box-shadow .2s}
+.task::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--acc);opacity:0;transition:opacity .2s;border-radius:0 3px 3px 0}
 .task:hover{transform:translateX(4px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
 .task:hover::before{opacity:1}
-.task.done{opacity:.4}
-.task.done::before{background:var(--green);opacity:1}
+.task.done{opacity:.42}
+.task.done::before{background:var(--grn);opacity:1}
 @keyframes taskIn{from{opacity:0;transform:translateY(-7px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 
-.chk{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--border2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;background:transparent}
-.chk:hover{border-color:var(--accent);background:var(--aglow)}
-.chk.done{background:var(--gdim);border-color:var(--green)}
-.chk.done::after{content:'✓';font-size:.72rem;color:var(--green);font-weight:700}
+.chk{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--brd2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;background:transparent}
+.chk:hover{border-color:var(--acc);background:var(--aglow)}
+.chk.done{background:var(--gdim);border-color:var(--grn)}
+.chk.done::after{content:'✓';font-size:.72rem;color:var(--grn);font-weight:700}
 
 .task-body{flex:1;min-width:0}
 .task-txt{font-size:.9rem;font-weight:500;line-height:1.45;word-break:break-word}
-.task.done .task-txt{text-decoration:line-through;color:var(--text3)}
+.task.done .task-txt{text-decoration:line-through;color:var(--txt3)}
 .task-meta{display:flex;align-items:center;gap:7px;margin-top:4px}
-.task-date{font-family:var(--mono);font-size:.6rem;color:var(--text3)}
-.task-cat{font-family:var(--mono);font-size:.57rem;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--surf2);color:var(--text3);border:1px solid var(--border)}
+.task-date{font-family:var(--mono);font-size:.6rem;color:var(--txt3)}
+.task-cat{font-family:var(--mono);font-size:.57rem;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--surf2);color:var(--txt3);border:1px solid var(--brd)}
 
 .task-btns{display:flex;gap:4px;opacity:0;transition:opacity .2s}
 .task:hover .task-btns{opacity:1}
-.tbtn{width:28px;height:28px;border-radius:7px;border:none;background:var(--surf2);color:var(--text3);cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.tbtn{width:28px;height:28px;border-radius:7px;border:none;background:var(--surf2);color:var(--txt3);cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
 .tbtn.del:hover{background:rgba(255,78,106,.15);color:var(--red)}
 
 /* Empty */
 .empty{text-align:center;padding:60px 20px;animation:fadeIn .3s ease}
 .empty-icon{font-size:2.8rem;opacity:.2;margin-bottom:14px}
-.empty h3{font-weight:700;font-size:1rem;color:var(--text2);margin-bottom:6px}
-.empty p{font-family:var(--mono);font-size:.67rem;color:var(--text3)}
+.empty h3{font-weight:700;font-size:1rem;color:var(--txt2);margin-bottom:6px}
+.empty p{font-family:var(--mono);font-size:.67rem;color:var(--txt3)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-/* ── BACKUP BANNER (shown when logged in) ── */
-.sync-banner{margin-top:28px;background:var(--surf);border:1px solid var(--border2);border-radius:var(--r);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.banner-info{display:flex;flex-direction:column;gap:4px}
-.banner-title{font-size:.85rem;font-weight:700;letter-spacing:-.01em}
-.banner-sub{font-family:var(--mono);font-size:.62rem;color:var(--text3)}
-.banner-sub b{color:var(--green)}
-.banner-btns{display:flex;gap:8px}
-.btn-back{background:linear-gradient(135deg,var(--accent),#9b8cff);color:#fff;border:none;border-radius:9px;padding:9px 16px;font-family:var(--sans);font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 3px 12px rgba(124,106,255,.3)}
-.btn-back:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,106,255,.4)}
-.btn-restore{background:transparent;border:1px solid var(--border2);border-radius:9px;padding:9px 16px;font-family:var(--sans);font-size:.8rem;color:var(--text2);cursor:pointer;transition:all .2s}
-.btn-restore:hover{border-color:var(--green);color:var(--green)}
+/* ── SYNC BANNER (logged in) ── */
+.sync-banner{margin-top:28px;background:var(--surf);border:1px solid var(--brd2);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.sb-info{display:flex;flex-direction:column;gap:3px}
+.sb-title{font-size:.88rem;font-weight:700;letter-spacing:-.01em}
+.sb-sub{font-family:var(--mono);font-size:.62rem;color:var(--txt3);line-height:1.5}
+.sb-sub b{color:var(--grn)}
+.sb-btns{display:flex;gap:8px;flex-shrink:0}
+.btn-backup{background:linear-gradient(135deg,var(--acc),#9b8cff);color:#fff;border:none;border-radius:9px;padding:9px 16px;font-family:var(--sans);font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 3px 12px rgba(124,106,255,.3)}
+.btn-backup:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,106,255,.4)}
+.btn-restore{background:transparent;border:1px solid var(--brd2);border-radius:9px;padding:9px 16px;font-family:var(--sans);font-size:.8rem;color:var(--txt2);cursor:pointer;transition:all .2s}
+.btn-restore:hover{border-color:var(--grn);color:var(--grn)}
 
-/* ── SIGN-IN PROMO (shown when logged out) ── */
-.promo-banner{margin-top:28px;background:linear-gradient(135deg,rgba(124,106,255,.07),rgba(60,255,160,.04));border:1px solid rgba(124,106,255,.15);border-radius:var(--r);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.promo-text h3{font-size:.9rem;font-weight:700;letter-spacing:-.01em;margin-bottom:4px}
-.promo-text p{font-family:var(--mono);font-size:.63rem;color:var(--text2);line-height:1.6}
-.promo-text p strong{color:var(--alight)}
-.btn-google-promo{display:flex;align-items:center;gap:9px;background:#fff;color:#1a1a2e;border:none;border-radius:10px;padding:10px 18px;font-family:var(--sans);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 2px 12px rgba(0,0,0,.3);flex-shrink:0}
-.btn-google-promo:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.4)}
-.btn-google-promo svg{width:18px;height:18px;flex-shrink:0}
+/* ── PROMO BANNER (logged out) ── */
+.promo-banner{margin-top:28px;background:linear-gradient(135deg,rgba(124,106,255,.07),rgba(60,255,160,.04));border:1px solid rgba(124,106,255,.15);border-radius:var(--r);padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.promo-txt h3{font-size:.9rem;font-weight:700;margin-bottom:5px}
+.promo-txt p{font-family:var(--mono);font-size:.63rem;color:var(--txt2);line-height:1.65}
+.promo-txt p strong{color:var(--alit)}
 
-/* ── GOOGLE SIGN-IN MODAL ── */
-#loginModal .modal h2{margin-bottom:8px}
-#loginModal .modal p{font-family:var(--mono);font-size:.7rem;color:var(--text2);line-height:1.7;margin-bottom:24px}
-.google-full{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;background:#fff;color:#1a1a2e;border:none;border-radius:11px;padding:14px;font-family:var(--sans);font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 2px 12px rgba(0,0,0,.3);margin-bottom:10px}
-.google-full:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
-.google-full svg{width:20px;height:20px;flex-shrink:0}
-.modal-note{font-family:var(--mono);font-size:.62rem;color:var(--text3);text-align:center;line-height:1.6;margin-top:14px}
-.modal-note button{background:none;border:none;color:var(--alight);font-family:var(--mono);font-size:.62rem;cursor:pointer;text-decoration:underline}
+/* Big Google button */
+.btn-g-big{display:flex;align-items:center;gap:10px;background:#fff;color:#1a1a2e;border:none;border-radius:11px;padding:11px 20px;font-family:var(--sans);font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 2px 12px rgba(0,0,0,.3);white-space:nowrap;flex-shrink:0}
+.btn-g-big:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.btn-g-big svg{width:18px;height:18px;flex-shrink:0}
 
-/* ── FIREBASE CONFIG MODAL ── */
-#cfgModal .modal-close{display:flex}
+/* ── SIGN-IN MODAL ── */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:800;display:none;align-items:center;justify-content:center;padding:20px}
+.backdrop.open{display:flex;animation:fadeIn .2s ease}
+.modal{background:var(--surf);border:1px solid var(--brd2);border-radius:20px;padding:32px;max-width:400px;width:100%;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6),0 0 0 1px rgba(124,106,255,.06);animation:riseIn .3s cubic-bezier(.34,1.2,.64,1)}
+.modal-x{position:absolute;top:14px;right:14px;background:var(--surf2);border:none;border-radius:7px;color:var(--txt3);width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:.9rem}
+.modal-x:hover{color:var(--txt);background:var(--brd2)}
+.modal h2{font-size:1.3rem;font-weight:800;letter-spacing:-.03em;margin-bottom:8px}
+.modal h2 em{font-style:normal;color:var(--alit)}
+.modal p{font-family:var(--mono);font-size:.7rem;color:var(--txt2);line-height:1.75;margin-bottom:26px}
+.modal p strong{color:var(--alit)}
+.btn-g-modal{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;background:#fff;color:#1a1a2e;border:none;border-radius:11px;padding:14px;font-family:var(--sans);font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 2px 12px rgba(0,0,0,.3);margin-bottom:12px}
+.btn-g-modal:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.btn-g-modal svg{width:20px;height:20px;flex-shrink:0}
+.modal-note{font-family:var(--mono);font-size:.62rem;color:var(--txt3);text-align:center;line-height:1.7}
 
 /* Toasts */
-.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:600;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{background:var(--surf2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:.7rem;color:var(--text);display:flex;align-items:center;gap:9px;animation:toastIn .25s ease;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:280px;pointer-events:all}
+.toasts{position:fixed;bottom:24px;right:24px;z-index:900;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surf2);border:1px solid var(--brd2);border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:.7rem;color:var(--txt);display:flex;align-items:center;gap:9px;animation:toastIn .25s ease;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:280px;pointer-events:all}
 .toast .ti{font-size:.9rem}
-.toast.ok .ti{color:var(--green)}
+.toast.ok .ti{color:var(--grn)}
 .toast.er .ti{color:var(--red)}
-.toast.in .ti{color:var(--alight)}
+.toast.in .ti{color:var(--alit)}
 @keyframes toastIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
 
 @media(max-width:520px){
   .promo-banner,.sync-banner{flex-direction:column;align-items:flex-start}
-  .btn-google-promo,.banner-btns{width:100%}
-  .btn-back,.btn-restore{flex:1;text-align:center}
-  .u-name{max-width:90px}
+  .btn-g-big,.sb-btns{width:100%}
+  .btn-backup,.btn-restore{flex:1;justify-content:center}
+  .u-email{display:none}
 }
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
+<!-- LOADER -->
 <div id="loadScr">
   <div class="spin"></div>
   <div class="load-brand">Task<b>Flow</b></div>
 </div>
 
-<!-- ── FIREBASE CONFIG MODAL (first time only) ── -->
-<div class="modal-backdrop" id="cfgModal">
+<!-- SIGN-IN MODAL -->
+<div class="backdrop" id="signInModal">
   <div class="modal">
-    <button class="modal-close" id="cfgClose">✕</button>
-    <h2>Connect <em>Firebase</em></h2>
-    <p class="sub">One-time setup — your config is saved locally and never needed again.</p>
-
-    <div class="fields">
-      <div class="field"><label>API Key</label><input id="fApiKey" placeholder="AIzaSy…" autocomplete="off" spellcheck="false"/></div>
-      <div class="field"><label>Auth Domain</label><input id="fAuthDomain" placeholder="myapp.firebaseapp.com"/></div>
-      <div class="field"><label>Database URL</label><input id="fDbUrl" placeholder="https://myapp-default-rtdb.firebaseio.com"/></div>
-      <div class="field"><label>Project ID</label><input id="fProjectId" placeholder="my-project-id"/></div>
-    </div>
-
-    <button class="btn-primary" id="btnSaveCfg">Save & Sign in with Google →</button>
-
-    <div class="hint-box">
-      <strong>Quick Setup (2 min):</strong><br>
-      1. <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → New project<br>
-      2. Add <strong>Web app</strong> (&lt;/&gt;) → copy <strong>firebaseConfig</strong><br>
-      3. <strong>Authentication</strong> → Sign-in → Enable <strong>Google</strong><br>
-      4. Add your site URL to <strong>Authorized domains</strong><br>
-      5. <strong>Realtime Database</strong> → Create → <strong>Test mode</strong>
-    </div>
-  </div>
-</div>
-
-<!-- ── GOOGLE SIGN-IN MODAL ── -->
-<div class="modal-backdrop" id="loginModal">
-  <div class="modal">
-    <button class="modal-close" id="loginClose">✕</button>
-    <h2>☁️ Backup & <em>Sync</em></h2>
-    <p>Sign in with your Google account to automatically back up your tasks and restore them on any device.</p>
-
-    <button class="google-full" id="btnGoogleLogin">
+    <button class="modal-x" id="modalClose">✕</button>
+    <h2>Sign in to <em>Sync</em></h2>
+    <p>
+      Your tasks will be <strong>automatically backed up</strong> to your Google account
+      and available on every device you sign in to.<br><br>
+      Just click below — no passwords, no forms.
+    </p>
+    <button class="btn-g-modal" id="btnDoSignIn">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -265,17 +223,14 @@ body::after{width:500px;height:500px;background:radial-gradient(circle,rgba(60,2
       </svg>
       Continue with Google
     </button>
-
     <div class="modal-note">
-      Your tasks are stored privately under your Google account.<br>
-      No other user can see your data.<br><br>
-      Need to configure Firebase first?
-      <button id="btnOpenCfg">Set up Firebase</button>
+      🔒 Private &amp; secure — each user's tasks are<br>
+      stored separately and only accessible to them.
     </div>
   </div>
 </div>
 
-<!-- ── MAIN APP (always visible) ── -->
+<!-- APP (always visible) -->
 <div class="app">
 
   <!-- Header -->
@@ -285,22 +240,25 @@ body::after{width:500px;height:500px;background:radial-gradient(circle,rgba(60,2
     </div>
     <div class="hdr-right">
 
-      <!-- Shown when signed IN -->
+      <!-- When signed IN -->
       <div id="userChip" class="user-chip" style="display:none">
         <div class="u-init" id="uAvatar">?</div>
-        <span class="u-name" id="uName">—</span>
-        <button class="btn-signout" id="btnSignOut">sign out</button>
+        <div class="u-info">
+          <span class="u-name"  id="uName">—</span>
+          <span class="u-email" id="uEmail">—</span>
+          <button class="btn-so" id="btnSignOut">sign out</button>
+        </div>
       </div>
 
-      <!-- Shown when signed OUT -->
-      <button class="btn-google-small" id="btnGoogleSmall" style="display:none">
-        <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+      <!-- When signed OUT -->
+      <button class="btn-g-sm" id="btnHeaderSignIn" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
           <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
-        Sign in to sync
+        Sign in
       </button>
 
       <!-- Sync status -->
@@ -311,7 +269,7 @@ body::after{width:500px;height:500px;background:radial-gradient(circle,rgba(60,2
     </div>
   </div>
 
-  <!-- Progress bar -->
+  <!-- Progress -->
   <div class="prog-wrap">
     <div class="prog-labels">
       <span id="progTxt">0 tasks</span>
@@ -320,7 +278,7 @@ body::after{width:500px;height:500px;background:radial-gradient(circle,rgba(60,2
     <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
   </div>
 
-  <!-- Task input -->
+  <!-- Input -->
   <div class="input-row">
     <input class="task-input" id="taskInput" placeholder="What needs to be done?" maxlength="280"/>
     <button class="add-btn" id="btnAdd">+</button>
@@ -343,28 +301,28 @@ body::after{width:500px;height:500px;background:radial-gradient(circle,rgba(60,2
     <button class="filt" data-f="done">Done</button>
   </div>
 
-  <!-- Tasks -->
+  <!-- Task list -->
   <ul class="tasks" id="taskList"></ul>
 
-  <!-- Banner: shown when SIGNED IN -->
+  <!-- Banner: SIGNED IN -->
   <div class="sync-banner" id="syncBanner" style="display:none">
-    <div class="banner-info">
-      <div class="banner-title">☁️ Google Sync Active</div>
-      <div class="banner-sub" id="bannerSub">Tasks auto-sync to your account</div>
+    <div class="sb-info">
+      <div class="sb-title">☁️ Google Sync Active</div>
+      <div class="sb-sub" id="sbSub">Your tasks sync automatically</div>
     </div>
-    <div class="banner-btns">
-      <button class="btn-back" id="btnBackup">💾 Backup now</button>
+    <div class="sb-btns">
+      <button class="btn-backup"  id="btnBackup">💾 Backup now</button>
       <button class="btn-restore" id="btnRestore">🔄 Restore</button>
     </div>
   </div>
 
-  <!-- Banner: shown when SIGNED OUT -->
-  <div class="promo-banner" id="promoBanner">
-    <div class="promo-text">
+  <!-- Banner: SIGNED OUT -->
+  <div class="promo-banner" id="promoBanner" style="display:none">
+    <div class="promo-txt">
       <h3>☁️ Never lose your tasks</h3>
-      <p>Sign in with Google to <strong>auto-sync</strong>, backup &amp; restore<br>your tasks on any device — free, private, instant.</p>
+      <p>Sign in with Google to <strong>auto-sync &amp; backup</strong><br>your tasks across all your devices — free &amp; private.</p>
     </div>
-    <button class="btn-google-promo" id="btnPromoLogin">
+    <button class="btn-g-big" id="btnPromoSignIn">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -375,21 +333,49 @@ body::after{width:500px;height:500px;background:radial-gradient(circle,rgba(60,2
     </button>
   </div>
 
-</div><!-- /.app -->
+</div>
 
-<div class="toast-wrap" id="toastWrap"></div>
+<div class="toasts" id="toasts"></div>
 
-<!-- Firebase SDK -->
+<!-- ════════════════════════════════════════════
+  IMPORTANT: Replace the firebaseConfig below
+  with YOUR project's config from Firebase Console.
+  Users will NEVER see this — they just click
+  "Sign in with Google" and it works automatically.
+
+  How to get your config (2 min):
+  1. console.firebase.google.com → New project
+  2. Add Web app (</>) → copy firebaseConfig
+  3. Authentication → Google → Enable
+  4. Add your GitHub Pages URL to Authorized Domains
+  5. Realtime Database → Create → Test mode
+  6. Paste config below and deploy!
+════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut as _so }
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut as fbSignOut }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getDatabase, ref, set, get, onValue, off }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// ═══════════════════════════════════
-//  STATE
-// ═══════════════════════════════════
+// ╔══════════════════════════════════════════╗
+// ║  PASTE YOUR FIREBASE CONFIG HERE         ║
+// ║  (only you, the developer, do this once) ║
+// ╚══════════════════════════════════════════╝
+const FIREBASE_CONFIG = {
+  apiKey:            "PASTE_YOUR_API_KEY_HERE",
+  authDomain:        "PASTE_YOUR_AUTH_DOMAIN_HERE",
+  databaseURL:       "PASTE_YOUR_DATABASE_URL_HERE",
+  projectId:         "PASTE_YOUR_PROJECT_ID_HERE",
+  storageBucket:     "PASTE_YOUR_STORAGE_BUCKET_HERE",
+  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID_HERE",
+  appId:             "PASTE_YOUR_APP_ID_HERE"
+};
+// ═══════════════════════════════════════════
+
+const IS_CONFIGURED = !FIREBASE_CONFIG.apiKey.includes('PASTE');
+
+// ─── State ───────────────────────────────────
 let tasks   = [];
 let filter  = 'all';
 let cat     = '';
@@ -397,83 +383,46 @@ let fbApp, fbAuth, fbDb;
 let user    = null;
 let liveRef = null;
 
-const LS_T   = 'tf_tasks_v3';
-const LS_CFG = 'tf_fbcfg_v3';
-const LS_BK  = 'tf_backup_ts';
+const LS_T  = 'tf_tasks_v3';
+const LS_BK = 'tf_backup_ts';
 
-// ═══════════════════════════════════
-//  BOOT — app is ALWAYS usable
-// ═══════════════════════════════════
+// ─── Boot ────────────────────────────────────
 ;(function boot() {
   try { tasks = JSON.parse(localStorage.getItem(LS_T) || '[]'); } catch{}
-
   render(); updateStats();
 
-  const cfg = localStorage.getItem(LS_CFG);
-  if (cfg) {
-    // Firebase config already saved — try silent re-auth
-    tryInitFirebase(JSON.parse(cfg));
+  if (IS_CONFIGURED) {
+    fbApp  = initializeApp(FIREBASE_CONFIG);
+    fbAuth = getAuth(fbApp);
+    fbDb   = getDatabase(fbApp);
+
+    onAuthStateChanged(fbAuth, u => {
+      g('loadScr').classList.add('gone');
+      if (u) { user = u; onSignedIn(u); }
+      else   { user = null; onSignedOut(); }
+    });
   } else {
-    // No config yet — show app, show sign-in button for later
-    hideLoading();
-    showSignedOut();
+    // Dev mode: Firebase not configured yet
+    g('loadScr').classList.add('gone');
+    onSignedOut();
+    toast('⚠️ Paste your Firebase config in the code to enable sync.', 'in');
   }
 })();
 
-// ═══════════════════════════════════
-//  FIREBASE
-// ═══════════════════════════════════
-function tryInitFirebase(cfg) {
-  try {
-    fbApp  = initializeApp(cfg);
-    fbAuth = getAuth(fbApp);
-    fbDb   = getDatabase(fbApp);
-    localStorage.setItem(LS_CFG, JSON.stringify(cfg));
-
-    onAuthStateChanged(fbAuth, u => {
-      hideLoading();
-      if (u) {
-        user = u;
-        onSignedIn(u);
-      } else {
-        user = null;
-        showSignedOut();
-      }
-    });
-  } catch(e) {
-    hideLoading();
-    showSignedOut();
-    toast('Firebase error: ' + e.message, 'er');
-  }
-}
-
-async function doGoogleSignIn() {
-  if (!fbAuth) { toast('Configure Firebase first', 'er'); return; }
-  try {
-    closeModal('loginModal');
-    showSyncStatus('saving', 'Signing in…');
-    await signInWithPopup(fbAuth, new GoogleAuthProvider());
-    // onAuthStateChanged fires → onSignedIn()
-  } catch(e) {
-    showSyncStatus('local', 'Local');
-    toast('Sign-in failed: ' + e.message, 'er');
-  }
-}
-
-// ═══════════════════════════════════
-//  SIGNED IN
-// ═══════════════════════════════════
+// ─── Signed In ───────────────────────────────
 function onSignedIn(u) {
-  // Header: show user chip, hide sign-in btn
-  g('userChip').style.display = '';
-  g('btnGoogleSmall').style.display = 'none';
-  g('uName').textContent = u.displayName || u.email || 'User';
+  // Header
+  g('userChip').style.display       = '';
+  g('btnHeaderSignIn').style.display = 'none';
+  g('uName').textContent             = u.displayName || 'User';
+  g('uEmail').textContent            = u.email || '';
 
   // Avatar
   const av = g('uAvatar');
   if (u.photoURL) {
     const img = document.createElement('img');
-    img.className = 'u-photo'; img.src = u.photoURL; img.referrerPolicy = 'no-referrer';
+    img.className = 'u-photo'; img.src = u.photoURL;
+    img.referrerPolicy = 'no-referrer';
     av.replaceWith(img);
   } else {
     av.textContent = (u.displayName || u.email || 'U')[0].toUpperCase();
@@ -482,32 +431,49 @@ function onSignedIn(u) {
   // Banners
   g('syncBanner').style.display  = '';
   g('promoBanner').style.display = 'none';
-
-  // Update banner sub text
-  updateBannerSub();
+  updateSubText();
 
   // Start live sync
-  showSyncStatus('saving', 'Connecting…');
-  startLiveSync(u.uid);
-
-  toast(`Welcome back, ${u.displayName?.split(' ')[0] || 'there'}! 👋`, 'in');
+  setSyncStatus('saving', 'Connecting…');
+  startSync(u.uid);
 }
 
-// ═══════════════════════════════════
-//  SIGNED OUT
-// ═══════════════════════════════════
-function showSignedOut() {
-  g('userChip').style.display    = 'none';
-  g('btnGoogleSmall').style.display = '';
-  g('syncBanner').style.display  = 'none';
-  g('promoBanner').style.display = '';
-  showSyncStatus('local', 'Local only');
+// ─── Signed Out ──────────────────────────────
+function onSignedOut() {
+  g('userChip').style.display       = 'none';
+  g('btnHeaderSignIn').style.display = '';
+  g('syncBanner').style.display      = 'none';
+  g('promoBanner').style.display     = '';
+  setSyncStatus('local', 'Local only');
+  if (liveRef) { off(liveRef); liveRef = null; }
 }
 
-// ═══════════════════════════════════
-//  LIVE SYNC
-// ═══════════════════════════════════
-function startLiveSync(uid) {
+// ─── Google Sign-In ──────────────────────────
+async function doSignIn() {
+  if (!IS_CONFIGURED) {
+    toast('Firebase not configured yet. See code comments.', 'er'); return;
+  }
+  closeModal();
+  setSyncStatus('saving', 'Signing in…');
+  try {
+    await signInWithPopup(fbAuth, new GoogleAuthProvider());
+    // onAuthStateChanged → onSignedIn()
+  } catch(e) {
+    setSyncStatus('local', 'Local only');
+    if (e.code !== 'auth/popup-closed-by-user')
+      toast('Sign-in failed: ' + e.message, 'er');
+  }
+}
+
+// ─── Sign Out ────────────────────────────────
+g('btnSignOut').onclick = async () => {
+  await fbSignOut(fbAuth);
+  onSignedOut();
+  toast('Signed out. Local tasks are still here.', 'in');
+};
+
+// ─── Live Sync ───────────────────────────────
+function startSync(uid) {
   if (liveRef) { off(liveRef); liveRef = null; }
   liveRef = ref(fbDb, `users/${uid}/tasks`);
 
@@ -517,84 +483,78 @@ function startLiveSync(uid) {
       tasks = merge(tasks, remote);
       saveLocal();
     } else {
-      // Nothing in cloud yet — push local tasks up
-      pushCloud(uid);
-      return;
+      // Nothing in cloud — push local tasks up
+      pushCloud(uid); return;
     }
-    render(); updateStats(); updateBannerSub();
-    showSyncStatus('live', 'Synced');
+    render(); updateStats(); updateSubText();
+    setSyncStatus('live', 'Synced ✓');
   }, err => {
-    showSyncStatus('error', 'Sync error');
+    setSyncStatus('error', 'Sync error');
     toast('Sync error: ' + err.message, 'er');
   });
 }
 
 function pushCloud(uid) {
   if (!fbDb || !uid) return;
-  showSyncStatus('saving', 'Saving…');
+  setSyncStatus('saving', 'Saving…');
   return set(ref(fbDb, `users/${uid}/tasks`), tasks)
-    .then(() => { showSyncStatus('live', 'Synced'); updateBannerSub(); })
-    .catch(e => { showSyncStatus('error', 'Failed'); toast('Save failed', 'er'); });
+    .then(() => { setSyncStatus('live', 'Synced ✓'); updateSubText(); })
+    .catch(() => { setSyncStatus('error', 'Failed'); toast('Save failed', 'er'); });
 }
 
-// ═══════════════════════════════════
-//  BACKUP & RESTORE
-// ═══════════════════════════════════
-async function doBackup() {
-  if (!user || !fbDb) return;
-  showSyncStatus('saving', 'Backing up…');
+// ─── Backup & Restore ────────────────────────
+g('btnBackup').onclick = async () => {
+  if (!user) return;
+  setSyncStatus('saving', 'Backing up…');
   try {
     await set(ref(fbDb, `users/${user.uid}/backup`), {
       tasks, backedUpAt: Date.now(), count: tasks.length
     });
     const ts = new Date().toLocaleString();
     localStorage.setItem(LS_BK, ts);
-    showSyncStatus('live', 'Synced');
-    updateBannerSub();
-    toast(`✓ ${tasks.length} tasks backed up`, 'ok');
+    setSyncStatus('live', 'Synced ✓');
+    updateSubText();
+    toast(`✓ ${tasks.length} tasks backed up to your Google account`, 'ok');
   } catch(e) {
-    showSyncStatus('error', 'Error');
+    setSyncStatus('error', 'Error');
     toast('Backup failed: ' + e.message, 'er');
   }
-}
+};
 
-async function doRestore() {
-  if (!user || !fbDb) return;
-  showSyncStatus('saving', 'Restoring…');
+g('btnRestore').onclick = async () => {
+  if (!user) return;
+  setSyncStatus('saving', 'Restoring…');
   try {
     const snap = await get(ref(fbDb, `users/${user.uid}/backup`));
     const data = snap.val();
     if (!data?.tasks?.length) {
-      showSyncStatus('live', 'Synced');
-      toast('No backup found for this account.', 'in'); return;
+      setSyncStatus('live', 'Synced ✓');
+      toast('No backup found for your account yet.', 'in'); return;
     }
     tasks = merge(tasks, data.tasks);
     saveLocal();
     await pushCloud(user.uid);
-    render(); updateStats(); updateBannerSub();
-    toast(`✓ ${data.tasks.length} tasks restored from backup`, 'ok');
+    render(); updateStats(); updateSubText();
+    const ts = new Date(data.backedUpAt).toLocaleString();
+    toast(`✓ Restored ${data.tasks.length} tasks (backed up ${ts})`, 'ok');
   } catch(e) {
-    showSyncStatus('error', 'Error');
+    setSyncStatus('error', 'Error');
     toast('Restore failed: ' + e.message, 'er');
   }
-}
+};
 
-// ═══════════════════════════════════
-//  TASK CRUD
-// ═══════════════════════════════════
+// ─── Task CRUD ───────────────────────────────
 function addTask() {
   const inp = g('taskInput'), text = inp.value.trim();
   if (!text) return;
-  tasks.unshift({ id: uid(), text, done: false, category: cat, createdAt: Date.now(), updatedAt: Date.now() });
+  tasks.unshift({ id: mkId(), text, done: false, category: cat, createdAt: Date.now(), updatedAt: Date.now() });
   inp.value = '';
   commit();
 }
 
 window._tog = id => {
-  const t = tasks.find(x => x.id === id);
-  if (!t) return;
-  t.done = !t.done; t.updatedAt = Date.now();
-  commit();
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  t.done = !t.done; t.updatedAt = Date.now(); commit();
 };
 window._del = id => { tasks = tasks.filter(x => x.id !== id); commit(); };
 
@@ -603,22 +563,20 @@ function commit() {
   if (user) pushCloud(user.uid);
 }
 
-// ═══════════════════════════════════
-//  RENDER
-// ═══════════════════════════════════
-const CATS = { work:'💼 Work', personal:'🏠 Personal', shopping:'🛒 Shopping', health:'💪 Health', study:'📚 Study' };
+// ─── Render ──────────────────────────────────
+const CLABELS = { work:'💼 Work', personal:'🏠 Personal', shopping:'🛒 Shopping', health:'💪 Health', study:'📚 Study' };
 
 function render() {
   const list = g('taskList');
   const vis  = tasks.filter(t => !(filter==='active'&&t.done) && !(filter==='done'&&!t.done));
   if (!vis.length) {
-    const [h,p] = ({all:['Nothing here yet','Type a task and hit Enter ↑'],active:['All clear!','No active tasks.'],done:['Nothing done yet','Check off some tasks.']})[filter];
+    const [h,p] = ({all:['Nothing here yet','Type a task above and hit Enter ↑'],active:['All clear!','No active tasks.'],done:['Nothing done yet','Check off some tasks.']})[filter];
     list.innerHTML = `<li class="empty"><div class="empty-icon">${filter==='done'?'✅':'📋'}</div><h3>${h}</h3><p>${p}</p></li>`;
     return;
   }
   list.innerHTML = vis.map(t => {
     const ts  = new Date(t.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const tag = t.category ? `<span class="task-cat">${CATS[t.category]||t.category}</span>` : '';
+    const tag = t.category ? `<span class="task-cat">${CLABELS[t.category]||t.category}</span>` : '';
     return `<li class="task${t.done?' done':''}">
       <div class="chk${t.done?' done':''}" onclick="_tog('${t.id}')"></div>
       <div class="task-body">
@@ -638,93 +596,39 @@ function updateStats() {
   g('progPct').textContent  = total ? `${pct}% done` : '—';
 }
 
-function updateBannerSub() {
+function updateSubText() {
   const ts  = localStorage.getItem(LS_BK);
-  const sub = g('bannerSub');
-  if (sub) sub.innerHTML = ts
-    ? `Last backup: <b>${ts}</b>`
-    : `Tasks auto-sync · <b>No manual backup yet</b>`;
+  const el  = g('sbSub');
+  el.innerHTML = ts ? `Auto-syncing · Last backup: <b>${ts}</b>` : `Tasks sync automatically to your account`;
 }
 
-// ═══════════════════════════════════
-//  MODALS
-// ═══════════════════════════════════
-function openModal(id)  { g(id).classList.add('open'); }
-function closeModal(id) { g(id).classList.remove('open'); }
+// ─── Modal ───────────────────────────────────
+function openModal()  { g('signInModal').classList.add('open'); }
+function closeModal() { g('signInModal').classList.remove('open'); }
 
-// ═══════════════════════════════════
-//  WIRING
-// ═══════════════════════════════════
-g('btnAdd').onclick     = addTask;
+// ─── Event Wiring ────────────────────────────
+g('btnAdd').onclick      = addTask;
 g('taskInput').addEventListener('keydown', e => { if (e.key==='Enter') addTask(); });
+g('btnDoSignIn').onclick = doSignIn;
+g('modalClose').onclick  = closeModal;
+g('btnHeaderSignIn').onclick = openModal;
+g('btnPromoSignIn').onclick  = openModal;
+g('signInModal').addEventListener('click', e => { if (e.target===g('signInModal')) closeModal(); });
 
-// Sign-in triggers
-[g('btnGoogleSmall'), g('btnPromoLogin')].forEach(b => b.onclick = () => {
-  if (!fbApp) openModal('loginModal');
-  else doGoogleSignIn();
-});
-
-g('btnGoogleLogin').onclick = () => {
-  if (fbApp) doGoogleSignIn();
-  else { closeModal('loginModal'); openModal('cfgModal'); }
-};
-
-g('btnOpenCfg').onclick  = () => { closeModal('loginModal'); openModal('cfgModal'); };
-g('loginClose').onclick  = () => closeModal('loginModal');
-g('cfgClose').onclick    = () => {
-  closeModal('cfgModal');
-  if (!fbApp) openModal('loginModal'); // go back
-};
-
-// Save Firebase config
-g('btnSaveCfg').onclick = () => {
-  const apiKey     = g('fApiKey').value.trim();
-  const authDomain = g('fAuthDomain').value.trim();
-  const dbUrl      = g('fDbUrl').value.trim();
-  const projectId  = g('fProjectId').value.trim();
-  if (!apiKey || !authDomain || !dbUrl || !projectId) { toast('Fill in all 4 fields.','er'); return; }
-  closeModal('cfgModal');
-  tryInitFirebase({ apiKey, authDomain, databaseURL: dbUrl, projectId });
-  setTimeout(() => { if (fbAuth) doGoogleSignIn(); }, 800);
-};
-
-// Sign out
-g('btnSignOut').onclick = async () => {
-  if (!fbAuth) return;
-  if (liveRef) { off(liveRef); liveRef = null; }
-  await _so(fbAuth);
-  user = null;
-  showSignedOut();
-  toast('Signed out. Your local tasks are still here.', 'in');
-};
-
-// Backup / Restore
-g('btnBackup').onclick  = doBackup;
-g('btnRestore').onclick = doRestore;
-
-// Category pills
 g('cats').addEventListener('click', e => {
   const b = e.target.closest('.cat'); if (!b) return;
-  document.querySelectorAll('.cat').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.cat').forEach(x=>x.classList.remove('on'));
   b.classList.add('on'); cat = b.dataset.c;
 });
 
-// Filter tabs
 document.querySelector('.filters').addEventListener('click', e => {
   const b = e.target.closest('.filt'); if (!b) return;
   filter = b.dataset.f;
-  document.querySelectorAll('.filt').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.filt').forEach(x=>x.classList.remove('on'));
   b.classList.add('on'); render();
 });
 
-// Close modals on backdrop click
-['cfgModal','loginModal'].forEach(id => {
-  g(id).addEventListener('click', e => { if (e.target === g(id)) closeModal(id); });
-});
-
-// ═══════════════════════════════════
-//  HELPERS
-// ═══════════════════════════════════
+// ─── Helpers ─────────────────────────────────
 function merge(local, remote) {
   const m = new Map();
   [...remote, ...local].forEach(t => {
@@ -733,25 +637,18 @@ function merge(local, remote) {
   });
   return Array.from(m.values()).sort((a,b) => b.createdAt - a.createdAt);
 }
-
-function showSyncStatus(state, label) {
-  g('syncDot').className    = 'sync-dot ' + state;
-  g('syncLbl').textContent  = label;
-}
-
+function setSyncStatus(s,l) { g('syncDot').className='sync-dot '+s; g('syncLbl').textContent=l; }
 function saveLocal() { localStorage.setItem(LS_T, JSON.stringify(tasks)); }
-function hideLoading() { g('loadScr').classList.add('gone'); setTimeout(()=>g('loadScr').style.display='none',500); }
 function g(i) { return document.getElementById(i); }
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function mkId() { return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
 function toast(msg, type='in') {
-  const icons = {ok:'✓', er:'✕', in:'◆'};
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.innerHTML = `<span class="ti">${icons[type]}</span><span>${msg}</span>`;
-  g('toastWrap').appendChild(el);
-  setTimeout(()=>el.remove(), 4000);
+  const icons={ok:'✓',er:'✕',in:'◆'};
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<span class="ti">${icons[type]}</span><span>${msg}</span>`;
+  g('toasts').appendChild(el);
+  setTimeout(()=>el.remove(),4200);
 }
 </script>
 </body>
